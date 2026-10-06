@@ -51,6 +51,8 @@
         "CHAT_MSG_WHISPER",
         "ERR_SPELL_UNLEARNED_S",
         "LinkUtil",
-        "Professions"
+        "Professions",
+        "OPTIONS",
+        "DELETE"
     ]
 }
