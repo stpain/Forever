@@ -1,0 +1,202 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
+
+    <Frame name="ForeverTBDSideTabTemplate" inherits="LargeSideTabButtonTemplate" mixin="ForeverTBDSideTabMixin" virtual="true">
+        <Scripts>
+            <OnLoad method="OnLoad" inherit="none"/>
+        </Scripts>
+    </Frame>
+
+
+    <Frame name="ForeverTBDUI" inherits="PortraitFrameTemplate" mixin="ForeverTBDMixin" parent="UIParent" movable="true">
+
+        <Size x="1000" y="600"/>
+
+        <Anchors>
+            <Anchor point="CENTER" x="0" y="0"/>
+        </Anchors>
+
+		<Frames>
+			<Frame parentKey="Tab1" inherits="ForeverTBDSideTabTemplate" parentArray="Tabs" id="1">
+				<KeyValues>
+					<KeyValue key="tooltipText" value="CHARACTER" type="global"/>
+					<KeyValue key="iconAtlas" value="gamepad-radial-icon-group-up" type="string"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" y="-60"/>
+				</Anchors>
+			</Frame>
+			<Frame parentKey="Tab2" inherits="ForeverTBDSideTabTemplate" parentArray="Tabs" id="2">
+				<KeyValues>
+					<KeyValue key="tooltipText" value="TRADESKILLS" type="global"/>
+					<KeyValue key="iconAtlas" value="gamepad-radial-icon-professions" type="string"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.Tab1" relativePoint="BOTTOMLEFT" y="-2"/>
+				</Anchors>
+			</Frame>
+			<Frame parentKey="Tab3" inherits="ForeverTBDSideTabTemplate" parentArray="Tabs" id="3">
+				<KeyValues>
+					<KeyValue key="tooltipText" value="TRADESKILLS" type="global"/>
+					<KeyValue key="iconAtlas" value="gamepad-radial-icon-chat" type="string"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.Tab2" relativePoint="BOTTOMLEFT" y="-2"/>
+				</Anchors>
+			</Frame>
+
+            <Frame parentKey="InsetBorder" inherits="InsetFrameTemplate3" useParentLevel="true">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-60"/>
+                    <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
+                </Anchors>
+            </Frame>
+
+            <Frame parentKey="CharacterSummary" parentArray="Views" id="1">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-60"/>
+                    <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
+                </Anchors>
+                <Frames>
+
+                    <Button parentKey="DropdownButtonClass" inherits="ForeverTBDDropdownButtonTemplate">
+                        <KeyValues>
+                            <KeyValue key="defaultText" value="CLASS" type="global"/>
+                        </KeyValues>
+                        <Size x="130" y="28"/>
+                        <Anchors>
+                            <Anchor point="TOPLEFT" x="10" y="-6"/>
+                        </Anchors>
+                    </Button>
+                    <Button parentKey="DropdownButtonProfession" inherits="ForeverTBDDropdownButtonTemplate">
+                        <KeyValues>
+                            <KeyValue key="defaultText" value="PROFESSIONS_BUTTON" type="global"/>
+                        </KeyValues>
+                        <Size x="140" y="28"/>
+                        <Anchors>
+                            <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.DropdownButtonClass" x="10" y="0"/>
+                        </Anchors>
+                    </Button>
+
+					<Frame parentKey="ScrollBox" inherits="WowScrollBoxList" frameStrata="HIGH">
+						<Anchors>
+							<Anchor point="TOPLEFT" x="5" y="-35"/>
+							<Anchor point="BOTTOMRIGHT" x="-25" y="5"/>
+						</Anchors>
+					</Frame>
+
+					<EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar" frameStrata="HIGH">
+						<Anchors>
+                            <Anchor point="TOPLEFT" relativeKey="$parent.ScrollBox" relativePoint="TOPRIGHT" x="5" y="-5"/>
+                            <Anchor point="BOTTOMLEFT" relativeKey="$parent.ScrollBox" relativePoint="BOTTOMRIGHT" x="5" y="5"/>
+						</Anchors>
+					</EventFrame>
+                </Frames>
+            </Frame>
+
+            <Frame parentKey="Professions" parentArray="Views" id="2" hidden="true">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-30"/>
+                    <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
+                </Anchors>
+
+                <Frames>
+
+                    <Button parentKey="DropdownSelectProfession" inherits="ForeverTBDDropdownButtonTemplate">
+                        <KeyValues>
+                            <KeyValue key="defaultText" value="CLASS" type="global"/>
+                        </KeyValues>
+                        <Size x="130" y="28"/>
+                        <Anchors>
+                            <Anchor point="TOPLEFT" x="10" y="-36"/>
+                        </Anchors>
+                    </Button>
+
+                    <!-- <Frame parentKey="RecipeSearchBox" inherits="ForeverTBDSearchBoxTemplate">
+                        <Anchors>
+                            <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.DropdownSelectProfession" x="5" y="0"/>
+                        </Anchors>
+                    </Frame> -->
+                    <EditBox parentKey="RecipeSearchBox" inherits="InputBoxTemplate" autoFocus="false">
+                        <Anchors>
+                            <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.DropdownSelectProfession" x="10" y="0"/>
+                        </Anchors>
+                        <Size x="145" y="26"/>
+                        <Layers>
+                            <Layer level="OVERLAY">
+                                <FontString parentKey="Label" text="SEARCH" inherits="GameFontNormal">
+                                    <Color r="0.5" g="0.5" b="0.5" a="0.8"/>
+                                    <Anchors>
+                                        <Anchor point="LEFT" x="5"/>
+                                    </Anchors>
+                                </FontString>
+                            </Layer>
+                        </Layers>
+                    </EditBox>
+
+                    <!--Middle section character list-->
+					<Frame parentKey="CharacterTreeScrollBox" inherits="WowScrollBoxList">
+						<Anchors>
+							<Anchor point="TOPLEFT" x="0" y="-62"/>
+							<Anchor point="BOTTOMLEFT" x="0" y="5"/>
+						</Anchors>
+                        <Size x="285"/>
+					</Frame>
+
+					<EventFrame parentKey="CharacterTreeScrollBar" inherits="MinimalScrollBar" frameStrata="HIGH">
+						<Anchors>
+                            <Anchor point="TOPLEFT" relativeKey="$parent.CharacterTreeScrollBox" relativePoint="TOPRIGHT" x="5" y="-5"/>
+                            <Anchor point="BOTTOMLEFT" relativeKey="$parent.CharacterTreeScrollBox" relativePoint="BOTTOMRIGHT" x="5" y="5"/>
+						</Anchors>
+					</EventFrame>
+
+                    <!--Right side recipe schematic-->
+                    <Frame parentKey="SchematicForm" inherits="ForeverTBDRecipeSchematicTemplate">
+						<Anchors>
+                            <Anchor point="TOPLEFT" relativeKey="$parent.CharacterTreeScrollBox" relativePoint="TOPRIGHT" x="25" y="25"/>
+                            <Anchor point="BOTTOMLEFT" relativeKey="$parent.CharacterTreeScrollBox" relativePoint="BOTTOMRIGHT" x="25" y="-2"/>
+                            <Anchor point="RIGHT" x="-2"/>
+						</Anchors>
+                    </Frame>
+
+                </Frames>
+
+
+                <Layers>
+                    <Layer level="OVERLAY">
+
+                        <!-- <FontString inherits="GameFontNormalLarge" justifyH="LEFT" text="CHARACTER">
+                            <Size x="100" y="20"/>
+                            <Anchors>
+                                <Anchor point="BOTTOMLEFT" relativeKey="$parent.CharacterTreeScrollBox" relativePoint="TOPLEFT" x="5" y="3"/>
+                            </Anchors>
+                        </FontString> -->
+                    </Layer>
+                </Layers>
+            </Frame>
+
+            <Frame parentKey="Whispers" inherits="ForeverTBDWhispers" parentArray="Views" id="3" hidden="true">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-30"/>
+                    <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
+                </Anchors>
+
+            </Frame>
+
+        </Frames>
+
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+            <OnEvent method="OnEvent"/>
+            <OnShow method="OnShow"/>
+            <OnHide method="OnHide"/>
+            <OnDragStart>
+                self:StartMoving()
+            </OnDragStart>
+            <OnDragStop>
+                self:StopMovingOrSizing()
+            </OnDragStop>
+        </Scripts>
+    </Frame>
+
+</Ui>

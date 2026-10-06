@@ -1,0 +1,152 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/AddOns/Blizzard_SharedXML/UI.xsd">
+
+    <Frame name="ForeverTBDRecipeSchematicTemplate" mixin="ForeverTBDRecipeSchematicMixin" virtual="true">
+
+        <Frames>
+            <Button parentKey="OutputIcon" inherits="CircularGiantItemButtonTemplate">
+                <Size x="47" y="47"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="28" y="-33"/>
+                </Anchors>
+                <Scripts>
+                    <OnLeave>
+                        GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+                    </OnLeave>
+                </Scripts>
+            </Button>
+
+            <Frame parentKey="ReagentsContainer">
+                <Anchors>
+                    <Anchor point="TOP" relativeKey="$parent.OutputIcon" relativePoint="BOTTOM" x="75" y="-65"/>
+                </Anchors>
+                <Layers>
+                    <Layer level="BACKGROUND">
+                        <FontString parentKey="Label" inherits="GameFontNormalSmall" justifyH="LEFT" text="BAG_FILTER_REAGENTS">
+                            <Size x="180" y="20"/>
+                            <Anchors>
+                                <Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" y="10"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>
+            </Frame>
+
+            <GameTooltip name="ForeverTBDRecipeTooltipEmbedded" parentKey="Tooltip" inherits="GameTooltipTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.OutputIcon" relativePoint="TOPRIGHT" x="280" y="0"/>
+                </Anchors>
+                <KeyValues>
+                    <KeyValue key="supportsDataRefresh" value="true" type="boolean"/>
+                    <KeyValue key="IsEmbedded" value="true" type="boolean"/>
+                </KeyValues>
+                <Scripts>
+                    <OnUpdate function="GameTooltip_OnUpdate"/>
+                </Scripts>
+            </GameTooltip>
+
+        </Frames>
+
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="Background" atlas="Professions-Specializations-Background-Leatherworking">
+                    <Anchors>
+                        <Anchor point="TOPLEFT"/>
+                        <Anchor point="BOTTOMRIGHT"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+
+            <Layer level="ARTWORK">
+				<FontString parentKey="Description" inherits="GameFontHighlightSmall2" justifyV="TOP" justifyH="LEFT">
+					<Size x="460" y="0"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.OutputIcon" relativePoint="BOTTOMLEFT" y="-5"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="OutputText" inherits="GameFontHighlightMed2" justifyV="TOP" justifyH="LEFT">
+					<Size x="400" y="0"/>
+					<Anchors>
+						<Anchor point="LEFT" relativeKey="$parent.OutputIcon" relativePoint="RIGHT" x="14" y="17"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="OutputSubText" inherits="GameFontNormal" justifyH="LEFT">
+					<Size x="300" y="20"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.OutputText" relativePoint="BOTTOMLEFT" y="-5"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="RequiredTools" inherits="GameFontHighlightSmall2" wordwrap="true" justifyV="TOP" justifyH="LEFT">
+					<Size x="392" y="60"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.OutputText" relativePoint="BOTTOMLEFT" y="-3"/>
+					</Anchors>
+				</FontString>
+
+                <Texture atlas="Legacy-Tree-Frame-divider-Vertical">
+                    <Size x="12"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="-6"/>
+                        <Anchor point="BOTTOMLEFT" x="-6"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+        </Layers>
+
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+
+    </Frame>
+
+	<ItemButton name="ForeverTBDReagentsButtonTemplate" mixin="ForeverTBDProfessionsButtonMixin" virtual="true">
+		<Size x="39" y="39" />
+		<Layers>
+			<!-- <Layer level="BACKGROUND">
+				<Texture parentKey="SlotBackground" atlas="Professions-Slot-bg"/>
+			</Layer> -->
+			<Layer level="ARTWORK">
+				<!--Substitution for the "icon" in ItemButton. Was originally added
+				so that currency textures could be manually assigned without conflict
+				with ItemButtonMixin.-->
+				<Texture parentKey="Icon"/>
+			</Layer>
+			<Layer level="OVERLAY">
+				<Texture parentKey="IconBorder" atlas="Professions-Slot-Frame" hidden="true"/>
+			</Layer>
+			<!-- <Layer level="OVERLAY" textureSubLevel="1">
+				<Texture parentKey="IconOverlay" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Icon" relativePoint="TOPLEFT"/>
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.Icon" relativePoint="BOTTOMRIGHT"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="OVERLAY" textureSubLevel="2">
+				<Texture parentKey="IconOverlay2" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Icon" relativePoint="TOPLEFT"/>
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.Icon" relativePoint="BOTTOMRIGHT"/>
+					</Anchors>
+				</Texture>
+			</Layer> -->
+			<Layer level="OVERLAY" textureSubLevel="2">
+				<FontString parentKey="Count" inherits="NumberFontNormal" justifyH="RIGHT">
+					<Anchors>
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.Icon" x="-1" y="1" />
+					</Anchors>
+				</FontString>
+				<FontString parentKey="Name" inherits="GameFontHighlight_NoShadow" justifyH="LEFT">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Icon" relativePoint="TOPRIGHT" x="5" y="0" />
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent.Icon" relativePoint="BOTTOMRIGHT" x="5" y="0" />
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnLoad method="OnLoad"/>
+		</Scripts>
+	</ItemButton>
+
+</Ui>

@@ -1,0 +1,60 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/AddOns/Blizzard_SharedXML/UI.xsd">
+
+    <Frame name="ForeverTBDDropdownButtonTemplate" mixin="ForeverTBDDropdownButtonMixin" virtual="true">
+        <Size x="140" y="28"/>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="BackgroundLeft" atlas="common-gray-button-entrybox-left">
+                    <Size x="8"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="-2" y="2"/>
+                        <Anchor point="BOTTOMLEFT" x="-2" y="-2"/>
+                    </Anchors>
+                </Texture>
+                <Texture parentKey="BackgroundRight" atlas="common-gray-button-entrybox-left">
+                    <Size x="8"/>
+                    <TexCoords left="1" right="0" top="0" bottom="1"/>
+                    <Anchors>
+                        <Anchor point="TOPRIGHT" x="2" y="2"/>
+                        <Anchor point="BOTTOMRIGHT" x="2" y="-2"/>
+                    </Anchors>
+                </Texture>
+                <Texture parentKey="BackgroundMiddle" atlas="common-gray-button-entrybox-center" horizTile="true">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeKey="$parent.BackgroundLeft" x="0" y="0"/>
+                        <Anchor point="TOPRIGHT" relativePoint="TOPLEFT" relativeKey="$parent.BackgroundRight" x="0" y="0"/>
+                        <Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" relativeKey="$parent.BackgroundLeft" x="0" y="0"/>
+                        <Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMLEFT" relativeKey="$parent.BackgroundRight" x="0" y="0"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="ARTWORK">
+
+            </Layer>
+            <Layer level="OVERLAY">
+                <FontString parentKey="Text" inherits="GameFontWhite">
+                    <Anchors>
+                        <Anchor point="LEFT" x="5" y="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Frames>
+            <Button parentKey="OpenMenu" registerForClicks="AnyUp, AnyDown" enableMouse="true">
+                <Size x="26" y="26"/>
+                <Anchors>
+                    <Anchor point="RIGHT" x="-1" y="-3"/>
+                </Anchors>
+                <NormalTexture atlas="common-dropdown-a-button"/>
+                <PushedTexture atlas="common-dropdown-a-button-pressed"/>
+                <!-- <HighlightTexture atlas="common-dropdown-a-button-hover"/> -->
+                <!-- <HighlightTexture atlas="common-dropdown-a-button-open"/> common-icon-search -->
+            </Button>
+        </Frames>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
+
+</Ui>

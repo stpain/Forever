@@ -1,0 +1,188 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/AddOns/Blizzard_SharedXML/UI.xsd">
+
+    <Button name="ForeverTBDWhisperCharacterTemplate" mixin="ForeverTBDWhisperCharacterMixin" registerForClicks="AnyDown" virtual="true">
+        <Layers>
+            <Layer level="OVERLAY" >
+                <FontString parentKey="Name" inherits="GameFontNormal">
+                    <Anchors>
+                        <Anchor point="LEFT" x="65"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+            <Layer level="ARTWORK">
+                <Texture parentKey="ClassIcon">
+                    <Size x="34" y="34"/>
+                    <Anchors>
+                        <Anchor point="LEFT" x="10" y="0"/>
+                    </Anchors>
+                </Texture>
+				<MaskTexture parentKey="IconMask" file="Interface\CharacterFrame\TempPortraitAlphaMask" hWrapMode="CLAMPTOBLACKADDITIVE" vWrapMode="CLAMPTOBLACKADDITIVE">
+					<Size x="56" y="56"/>
+                    <Anchors>
+						<Anchor point="CENTER" relativePoint="CENTER" relativeKey="$parent.ClassIcon"/>
+					</Anchors>
+					<MaskedTextures>
+						<MaskedTexture childKey="ClassIcon"/>
+					</MaskedTextures>
+				</MaskTexture>
+            </Layer>
+            <Layer level="ARTWORK" textureSubLevel="2">
+                <Texture atlas="Adventurers-Followers-Frame-Troops">
+                    <Size x="46" y="46"/>
+                    <Anchors>
+                        <Anchor point="CENTER" relativePoint="CENTER" relativeKey="$parent.ClassIcon"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+        </Layers>
+
+        <Scripts>
+            <OnClick method="OnClick"/>
+        </Scripts>
+
+        <NormalTexture atlas="pvpqueue-button-casual-up"/>
+        <PushedTexture atlas="pvpqueue-button-casual-down"/>
+        <HighlightTexture atlas="pvpqueue-button-casual-selected" alphaMode="ADD"/>
+
+    </Button>
+
+
+    <Frame name="ForeverTBDWhisperMessageTemplate" mixin="ForeverTBDWhisperMessageMixin" virtual="true">
+        <Frames>
+            <Frame parentKey="Bubble">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5"/>
+                </Anchors>
+                <Size x="340"/>
+                <Layers>
+                    <Layer level="OVERLAY" >
+                        <FontString parentKey="MessageText" justifyH="LEFT" justifyV="TOP">
+                            <Anchors>
+                                <Anchor point="TOPLEFT" x="10" y="-10"/>
+                                <Anchor point="BOTTOMRIGHT" x="-10" y="17"/>
+                            </Anchors>
+                        </FontString>
+                        <FontString parentKey="TimeStamp" inherits="GameFontNormalSmall">
+                            <Anchors>
+                                <Anchor point="BOTTOMRIGHT" x="-4" y="6"/>
+                            </Anchors>
+                        </FontString>
+                        <FontString parentKey="AltName" inherits="GameFontNormalSmall" hidden="true">
+                            <Anchors>
+                                <Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" x="-6" y="2"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>
+            </Frame>
+        </Frames>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
+
+
+
+    <Frame name="ForeverTBDWhispers" mixin="ForeverTBDWhispersMixin" virtual="true">
+        <Frames>
+            <Frame parentKey="CharacterScrollBox" inherits="WowScrollBoxList">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-40"/>
+                    <Anchor point="BOTTOMLEFT" x="5" y="5"/>
+                </Anchors>
+                <Size x="265"/>
+            </Frame>
+
+            <EventFrame parentKey="CharacterScrollBar" inherits="MinimalScrollBar" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.CharacterScrollBox" relativePoint="TOPRIGHT" x="5" y="-5"/>
+                    <Anchor point="BOTTOMLEFT" relativeKey="$parent.CharacterScrollBox" relativePoint="BOTTOMRIGHT" x="5" y="5"/>
+                </Anchors>
+            </EventFrame>
+
+            <Frame parentKey="MessagesScrollBox" inherits="WowScrollBoxList">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.CharacterScrollBox" relativePoint="TOPRIGHT" x="35" y="-40"/>
+                    <Anchor point="BOTTOMLEFT" relativeKey="$parent.CharacterScrollBox" relativePoint="BOTTOMRIGHT" x="35" y="50"/>
+                    <Anchor point="RIGHT" x="-25" y="0"/>
+                </Anchors>
+            </Frame>
+
+            <EventFrame parentKey="MessagesScrollBar" inherits="MinimalScrollBar" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.MessagesScrollBox" relativePoint="TOPRIGHT" x="5" y="-5"/>
+                    <Anchor point="BOTTOMLEFT" relativeKey="$parent.MessagesScrollBox" relativePoint="BOTTOMRIGHT" x="5" y="5"/>
+                </Anchors>
+            </EventFrame>
+
+            <ScrollFrame parentKey="SendMessageInput" inherits="InputScrollFrameTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.MessagesScrollBox" relativePoint="BOTTOMLEFT" x="5" y="-8"/>
+                    <Anchor point="BOTTOMRIGHT" x="-60" y="12"/>
+                </Anchors>
+                <KeyValues>
+                    <KeyValue key="maxLetters" value="250" type="number"/>
+                    <!-- <KeyValue key="instructions" value="PROFESSIONS_CRAFTING_FORM_OPTIONAL_MESSAGE" type="global"/> -->
+                    <KeyValue key="hideCharCount" value="false" type="boolean"/>
+                </KeyValues>
+            </ScrollFrame>
+
+            <Button parentKey="SendMessageButton">
+                <Size x="38" y="38"/>
+                <NormalTexture atlas="Legacy-Rewards-Tracker-Arrow-Big-Left">
+                    <TexCoords left="1" right="0" top="0" bottom="1"/>
+                </NormalTexture>
+                <PushedTexture atlas="Legacy-Rewards-Tracker-Arrow-Big-Left-pressed">
+                    <TexCoords left="1" right="0" top="0" bottom="1"/>
+                </PushedTexture>
+                <DisabledTexture atlas="Legacy-Rewards-Tracker-Arrow-Big-Left-disable">
+                    <TexCoords left="1" right="0" top="0" bottom="1"/>
+                </DisabledTexture>
+                <Anchors>
+                    <Anchor point="BOTTOMRIGHT" x="-11" y="10"/>
+                </Anchors>
+            </Button>
+            
+        </Frames>
+
+        <Layers>
+            <Layer level="ARTWORK">
+                <Texture atlas="Legacy-Tree-Frame-divider-Vertical">
+                    <Size x="12"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.CharacterScrollBar" relativePoint="TOPRIGHT" x="5" y="8"/>
+                        <Anchor point="BOTTOMLEFT" relativeKey="$parent.CharacterScrollBar" relativePoint="BOTTOMRIGHT" x="5" y="-8"/>
+                    </Anchors>
+                </Texture>
+                <Texture file="Interface/Buttons/WHITE8x8"> 
+                    <Size y="1"/>
+                    <Gradient orientation="HORIZONTAL">
+                        <MinColor r="0.5" g="0.5" b="0.5" a="1"/>
+                        <MaxColor r="0.5" g="0.5" b="0.5" a="0"/>
+                    </Gradient>
+                    <Anchors>
+                        <Anchor point="BOTTOMLEFT" relativeKey="$parent.MessagesScrollBox" relativePoint="TOPLEFT" x="0" y="8"/>
+                        <Anchor point="BOTTOMRIGHT" relativeKey="$parent.MessagesScrollBox" relativePoint="TOPRIGHT" x="0" y="8"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+
+            <Layer level="OVERLAY">
+                <FontString parentKey="ChatHistoryRecipientName" inherits="GameFontNormalLarge">
+                    <Anchors>
+                        <Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" relativeKey="$parent.MessagesScrollBox" x="0" y="20"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+            <OnEvent method="OnEvent"/>
+        </Scripts>
+    </Frame>
+
+
+
+</Ui>

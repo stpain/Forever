@@ -1,0 +1,152 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/AddOns/Blizzard_SharedXML/UI.xsd">
+
+    <Frame name="ForeverTBDCharacterSummaryTemplate" mixin="ForeverTBDCharacterSummaryMixin" virtual="true">
+        <Size x="980" y="70"/>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="Background" file="Interface/Buttons/WHITE8x8" hidden="false">
+                    <!-- <Gradient orientation="HORIZONTAL">
+                        <MinColor r="0" g="0" b="0" a="1"/>
+                        <MaxColor r="0" g="0" b="0" a="0"/>
+                    </Gradient> -->
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="30" y="-2"/>
+                        <Anchor point="BOTTOMRIGHT" x="-2" y="2"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="ARTWORK">
+                <Texture parentKey="RaceIcon">
+                    <Size x="58" y="58"/>
+                    <Anchors>
+                        <Anchor point="LEFT" x="5" y="0"/>
+                    </Anchors>
+                </Texture>
+				<MaskTexture parentKey="IconMask" file="Interface\CharacterFrame\TempPortraitAlphaMask" hWrapMode="CLAMPTOBLACKADDITIVE" vWrapMode="CLAMPTOBLACKADDITIVE">
+					<Size x="60" y="60"/>
+                    <Anchors>
+						<Anchor point="CENTER" relativePoint="CENTER" relativeKey="$parent.RaceIcon"/>
+					</Anchors>
+					<MaskedTextures>
+						<MaskedTexture childKey="RaceIcon"/>
+					</MaskedTextures>
+				</MaskTexture>
+            </Layer>
+            <Layer level="ARTWORK" textureSubLevel="2">
+                <Texture atlas="Adventurers-Followers-Frame-Troops">
+                    <Size x="70" y="70"/>
+                    <Anchors>
+                        <Anchor point="CENTER" relativePoint="CENTER" relativeKey="$parent.RaceIcon"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="OVERLAY">
+                <FontString parentKey="Name" inherits="GameFontNormalLarge" justifyH="LEFT">
+                    <Size x="214" y="20"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="80" y="-5"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="Level" inherits="GameFontNormal" justifyH="LEFT" justifyV="TOP">
+                    <Size x="214" y="15"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.Name" relativePoint="BOTTOMLEFT" x="0" y="-3"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="HomeLocation" inherits="GameFontNormalLarge" justifyH="LEFT">
+                    <Size x="214" y="24"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.Name" relativePoint="TOPRIGHT" x="12" y="0"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="Money" inherits="GameFontNormal" justifyH="LEFT">
+                    <Size x="214" y="18"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.HomeLocation" relativePoint="BOTTOMLEFT" x="5" y="-2"/>
+                    </Anchors>
+                </FontString>
+                <FontString parentKey="Login" inherits="GameFontWhite" justifyH="LEFT">
+                    <Size x="214" y="18"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.Money" relativePoint="BOTTOMLEFT" x="0" y="-2"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+
+        <Frames>
+            <StatusBar parentKey="XP" inherits="TooltipProgressBarTemplate">
+                <Anchors>
+                    <Anchor point="BOTTOMLEFT" x="80" y="5"/>
+                </Anchors>
+            </StatusBar>
+            <Button parentKey="Profession1Button" inherits="SmallItemButtonTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="538" y="-4"/>
+                </Anchors>
+                <Scripts>
+                    <OnLeave>
+                        GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+                    </OnLeave>
+                </Scripts>
+            </Button>
+            <Button parentKey="Profession2Button" inherits="SmallItemButtonTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.Profession1Button" relativePoint="BOTTOMLEFT" x="0" y="-3"/>
+                </Anchors>
+                <Scripts>
+                    <OnLeave>
+                        GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+                    </OnLeave>
+                </Scripts>
+            </Button>
+
+            <Button parentKey="CookingButton" inherits="SmallItemButtonTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.Profession1Button" relativePoint="TOPRIGHT" x="5" y="0"/>
+                </Anchors>
+                <Scripts>
+                    <OnLeave>
+                        GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+                    </OnLeave>
+                </Scripts>
+            </Button>
+            <Button parentKey="FishingButton" inherits="SmallItemButtonTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.CookingButton" relativePoint="BOTTOMLEFT" x="0" y="-3"/>
+                </Anchors>
+                <Scripts>
+                    <OnLeave>
+                        GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+                    </OnLeave>
+                </Scripts>
+            </Button>
+
+            <Button parentKey="FirstAidButton" inherits="SmallItemButtonTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.CookingButton" relativePoint="TOPRIGHT" x="5" y="0"/>
+                </Anchors>
+                <Scripts>
+                    <OnLeave>
+                        GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+                    </OnLeave>
+                </Scripts>
+            </Button>
+            <!-- <Button parentKey="MoneyButton" inherits="SmallItemButtonTemplate">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.FirstAidButton" relativePoint="BOTTOMLEFT" x="0" y="-3"/>
+                </Anchors>
+                <Scripts>
+                    <OnLeave>
+                        GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+                    </OnLeave>
+                </Scripts>
+            </Button> -->
+        </Frames>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
+
+</Ui>

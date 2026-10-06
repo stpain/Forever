@@ -1,0 +1,40 @@
+## Interface: 16001
+## Author: TheBoringDad
+## Version: 0.1
+## Title: Forever
+## Notes: Forever, track your characters and more!
+## SavedVariables: ForeverTBDAccount
+## SavedVariablesPerCharacter: ForeverTBDCharacter
+
+## IconAtlas: newplayerchat-chaticon-newcomer
+
+## Category: Other
+## Category-deDE: Anderes
+## Category-esES: Otros
+## Category-esMX: Otros
+## Category-frFR: Autre
+## Category-itIT: Altro
+## Category-koKR: 기타
+## Category-ptBR: Outro
+## Category-ruRU: Другое
+## Category-zhCN: 其它
+## Category-zhTW: 其他
+
+Callbacks.lua
+SavedVars.lua
+
+Mixins\Buttons.lua
+Mixins\Character.lua
+Mixins\CharacterSummary.lua
+Mixins\RecipeSchematic.lua
+Mixins\Whispers.lua
+
+Templates\CharacterSummary.xml
+Templates\DropdownButton.xml
+Templates\ProfessionListButton.xml
+Templates\RecipeSchematic.xml
+Templates\SearchBox.xml
+Templates\Whispers.xml
+
+ForeverTBD.lua
+ForeverTBD.xml
