@@ -49,6 +49,21 @@ function SavedVars:FindCharacterByPredicate(func)
     end
 end
 
+function SavedVars:DeleteCharacter(characterName)
+    if self.db.characters then
+        local indexToDelete;
+        for k, character in ipairs(self.db.characters) do
+            if (character.name == characterName) then
+                indexToDelete = k;
+            end
+        end
+        if (indexToDelete ~= nil) then
+            table.remove(self.db.characters, indexToDelete);
+            addon.CallbackRegistry:TriggerEvent(addon.Callbacks.SavedVars_OnDataChanged);
+        end
+    end
+end
+
 function SavedVars:NewCharacter()
     table.insert(self.db.characters, {});
     local character = addon.Character:CreateFromData(self.db.characters[#self.db.characters]);

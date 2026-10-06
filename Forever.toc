@@ -20,6 +20,8 @@
 ## Category-zhCN: 其它
 ## Category-zhTW: 其他
 
+## X-Curse-Project-ID: 1712490
+
 Callbacks.lua
 SavedVars.lua
 
@@ -36,5 +38,5 @@ Templates\RecipeSchematic.xml
 Templates\SearchBox.xml
 Templates\Whispers.xml
 
-ForeverTBD.lua
-ForeverTBD.xml
+Forever.lua
+Forever.xml

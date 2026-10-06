@@ -155,6 +155,8 @@ function ForeverTBDMixin:OnLoad()
 
     self:SetupCharacterSummary();
     self:SetupProfessions();
+
+    addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnDataChanged, self.SavedVars_OnDataChanged, self)
 end
 
 function ForeverTBDMixin:OnTabSelected(tab)
@@ -184,6 +186,9 @@ function ForeverTBDMixin:OnHide()
     
 end
 
+function ForeverTBDMixin:SavedVars_OnDataChanged()
+    self:LoadCharacterSummaryList();
+end
 
 function ForeverTBDMixin:PLAYER_ENTERING_WORLD(...)
     local isInitial, isReload = ...;
@@ -257,6 +262,14 @@ function ForeverTBDMixin:PLAYER_ENTERING_WORLD(...)
                 return;
             end
         end)
+
+        if (ActiveCharacter ~= nil) then
+            local loginTime = ActiveCharacter:GetLoginTime();
+            if (loginTime == nil) then
+                local loginTime = time();
+                ActiveCharacter:SetLoginTime(loginTime);
+            end
+        end
 
     end
 
@@ -482,7 +495,7 @@ end
 
 
 ---Loads Characters into the summary using set filters, if none it loads all characters
----@param filter table { key=filterKey, func=function, } the filterKey is used to manage adding/updating/removing the filter, the func is passed the Character and should return true for valid matches
+---@param filter table? { key=filterKey, func=function, } the filterKey is used to manage adding/updating/removing the filter, the func is passed the Character and should return true for valid matches
 function ForeverTBDMixin:LoadCharacterSummaryList(filter)
 
     if (filter) then

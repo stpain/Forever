@@ -1,7 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/AddOns/Blizzard_SharedXML/UI.xsd">
 
-    <Frame name="ForeverTBDCharacterSummaryTemplate" mixin="ForeverTBDCharacterSummaryMixin" virtual="true">
+    <Button name="ForeverTBDCharacterSummaryTemplate" mixin="ForeverTBDCharacterSummaryMixin" registerForClicks="AnyUp,AnyDown" virtual="true">
         <Size x="980" y="70"/>
         <Layers>
             <Layer level="BACKGROUND">
@@ -146,7 +146,8 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
         </Frames>
         <Scripts>
             <OnLoad method="OnLoad"/>
+            <OnClick method="OnClick"/>
         </Scripts>
-    </Frame>
+    </Button>
 
 </Ui>

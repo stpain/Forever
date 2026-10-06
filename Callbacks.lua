@@ -4,6 +4,7 @@ local addonName, addon = ...;
 
 addon.Callbacks = {
     SavedVars_OnInitialized = "SAVED_VARS_INIT",
+    SavedVars_OnDataChanged = "SAVED_VARS_DATA_CHANGED",
 
     Character_OnChanged = "CHARACTER_CHANGED",
     

@@ -54,6 +54,22 @@ function ForeverTBDCharacterSummaryMixin:OnLoad()
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.Character_OnChanged, self.Character_OnChanged, self);
 end
 
+function ForeverTBDCharacterSummaryMixin:OnClick(...)
+    local mouseButton, _ = ...;
+
+    if (mouseButton == "RightButton") and (self.Character ~= nil) then
+        
+        MenuUtil.CreateContextMenu(self, function(_, rootDescription)
+            rootDescription:CreateTitle(OPTIONS);
+            rootDescription:CreateDivider();
+
+            rootDescription:CreateButton(DELETE, function()
+            
+            end)
+        end)
+    end
+end
+
 function ForeverTBDCharacterSummaryMixin:ClearCharacter()
     self.Character = nil;
     self.Background:SetColorTexture(0,0,0,0);
