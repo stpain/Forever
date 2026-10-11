@@ -20,3 +20,7 @@ function ForeverJournalMixin:Init()
     end
     self.journal = SavedVars:GetTable("journal");
 end
+
+function ForeverJournalMixin:OnEvent()
+    
+end
