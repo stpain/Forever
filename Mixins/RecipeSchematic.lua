@@ -19,14 +19,14 @@ function ForeverTBDProfessionsButtonMixin:SetSlotQuality(quality, name)
 
     if (quality > 1) then
         --print(name, quality, "anchoring on top")
-        self.IconBorder:ClearAllPoints();
-        self.IconBorder:SetPoint("TOPLEFT", self.Icon, "TOPLEFT", -1, 0);
-        self.IconBorder:SetPoint("BOTTOMRIGHT", self.Icon, "BOTTOMRIGHT", 1, -1);
+        -- self.IconBorder:ClearAllPoints();
+        -- self.IconBorder:SetPoint("TOPLEFT", self.Icon, "TOPLEFT", -1, 0);
+        -- self.IconBorder:SetPoint("BOTTOMRIGHT", self.Icon, "BOTTOMRIGHT", 1, -1);
     else
         --print(name, quality, "anchoring outside frame")
-        self.IconBorder:ClearAllPoints();
-        self.IconBorder:SetPoint("TOPLEFT", self.Icon, "TOPLEFT", -5, 4);
-        self.IconBorder:SetPoint("BOTTOMRIGHT", self.Icon, "BOTTOMRIGHT", 4, -5);
+        -- self.IconBorder:ClearAllPoints();
+        -- self.IconBorder:SetPoint("TOPLEFT", self.Icon, "TOPLEFT", -5, 4);
+        -- self.IconBorder:SetPoint("BOTTOMRIGHT", self.Icon, "BOTTOMRIGHT", 4, -5);
     end
 
     if atlasData.atlas then

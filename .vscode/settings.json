@@ -53,6 +53,10 @@
         "LinkUtil",
         "Professions",
         "OPTIONS",
-        "DELETE"
+        "DELETE",
+        "ERR_ZONE_EXPLORED",
+        "ERR_ZONE_EXPLORED_XP",
+        "HelpTip",
+        "EDIT_MODE_HELPTIPS_LAYOUTS"
     ]
 }

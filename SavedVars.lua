@@ -11,6 +11,7 @@ local Defaults = {
     characters = {},
     interactions = {},
     whispers = {},
+    journal = {},
 }
 
 function SavedVars:Init(reset)

@@ -169,6 +169,7 @@ function Character:SetProfession(slot, data)
             isNew = true;
         end
     end
+    --print("[Character:SetProfession]", slot, data[1], tostring(isNew));
     self.data[slot] = data;
     if (isNew == true) then
         addon.CallbackRegistry:TriggerEvent(addon.Callbacks.Character_OnChanged);
@@ -217,6 +218,8 @@ end
 
 function Character:SearchRecipes(searchTerm)
     local ret = {};
+    local lowerName;
+    searchTerm = searchTerm:lower()
     local keys = { "prof1Recipes", "prof2Recipes", "cookingRecipes", "fishingRecipes", "firstAidRecipes" };
     for _, key in ipairs(keys) do
         if self.data[key] then
@@ -224,12 +227,14 @@ function Character:SearchRecipes(searchTerm)
                 if (searchTerm == recipe.recipeID) then
                     table.insert(ret, recipe);
                 end
-                if (string.find(recipe.name, searchTerm, nil, true)) then
+                lowerName = recipe.name:lower();
+                if (string.find(lowerName, searchTerm, nil, true)) then
                     table.insert(ret, recipe);
                 end
             end
         end
     end
+    lowerName = nil;
     return ret;
 end
 

@@ -23,18 +23,34 @@ function ForeverTBDWhisperCharacterMixin:ClearCharacter()
     self.Name:SetText("");
     self.ClassIcon:SetTexture(nil);
     self.onClick = nil;
+    self.character = nil;
 end
 
 function ForeverTBDWhisperCharacterMixin:SetCharacter(character)
+    self.character = character;
     self.Name:SetText(character.name);
-    self.ClassIcon:SetAtlas(string.format("UI-HUD-UnitFrame-Player-Portrait-ClassIcon-%s", character.class));
+    if character.class then
+        self.ClassIcon:SetAtlas(string.format("UI-HUD-UnitFrame-Player-Portrait-ClassIcon-%s", character.class));
+    end
     self.onClick = character.onClick;
 end
 
-function ForeverTBDWhisperCharacterMixin:OnClick()
-    if self.onClick then
-        self.onClick();
+function ForeverTBDWhisperCharacterMixin:OnClick(hwButton)
+    
+    if (hwButton == "RightButton") then
+        MenuUtil.CreateContextMenu(self, function(_, rootDescription)
+            rootDescription:CreateTitle(OPTIONS);
+            rootDescription:CreateDivider();
+            rootDescription:CreateButton(DELETE, function()
+               addon.CallbackRegistry:TriggerEvent(addon.Callbacks.Whisper_OnChatHistoryDeleted, self.character);
+            end)
+        end)
+    else
+        if self.onClick then
+            self.onClick();
+        end
     end
+
 end
 
 
@@ -88,8 +104,8 @@ local events = {
     "CHAT_MSG_WHISPER",
     "CHAT_MSG_WHISPER_INFORM",
     --"CHAT_MSG_SYSTEM",
-    "CHAT_MSG_BN_WHISPER_INFORM",
-    "CHAT_MSG_BN_WHISPER",
+    --"CHAT_MSG_BN_WHISPER_INFORM",
+    --"CHAT_MSG_BN_WHISPER",
     --"PLAYER_ENTERING_WORLD",
 }
 
@@ -166,6 +182,7 @@ function ForeverTBDWhispersMixin:OnLoad()
     ScrollUtil.InitScrollBoxListWithScrollBar(self.MessagesScrollBox, self.MessagesScrollBar, messageHistory);
 
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnInitialized, self.SavedVars_OnInitialized, self);
+    addon.CallbackRegistry:RegisterCallback(addon.Callbacks.Whisper_OnChatHistoryDeleted, self.Whisper_OnChatHistoryDeleted, self);
 end
 
 function ForeverTBDWhispersMixin:SavedVars_OnInitialized(...)
@@ -187,6 +204,26 @@ function ForeverTBDWhispersMixin:SavedVars_OnInitialized(...)
     self:RefreshCharacterList();
 end
 
+
+function ForeverTBDWhispersMixin:Whisper_OnChatHistoryDeleted(character)
+    if self.whispers then
+        local newWhispers = {}
+        for _, whisper in ipairs(self.whispers) do
+            if (whisper.sender ~= character.name) then
+                table.insert(newWhispers, whisper);
+            end
+        end
+
+        SavedVars:ResetTable("whispers", newWhispers);
+        self.whispers = SavedVars:GetTable("whispers");
+        
+        self:RefreshCharacterList();
+
+        if (self.currentChatHistoryRecipient == character.name) then
+            self:LoadChatHistory();
+        end
+    end
+end
 
 function ForeverTBDWhispersMixin:OnEvent(event, ...)
     if self[event] then
@@ -235,7 +272,7 @@ end
 
 function ForeverTBDWhispersMixin:LoadChatHistory(playerName)
     self.currentChatHistoryRecipient = playerName;
-    self.ChatHistoryRecipientName:SetText(playerName);
+    self.ChatHistoryRecipientName:SetText(playerName or "");
     if self.whispers then
         local t = {};
         for _, whisper in ipairs(self.whispers) do

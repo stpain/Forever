@@ -2,6 +2,8 @@
 
 local addonName, addon = ...;
 
+local SavedVars = addon.SavedVars;
+
 ForeverTBDCharacterSummaryMixin = {}
 
 
@@ -64,7 +66,7 @@ function ForeverTBDCharacterSummaryMixin:OnClick(...)
             rootDescription:CreateDivider();
 
             rootDescription:CreateButton(DELETE, function()
-            
+                SavedVars:DeleteCharacter(self.Character:GetName());
             end)
         end)
     end
@@ -117,9 +119,22 @@ function ForeverTBDCharacterSummaryMixin:UpdateCharacter()
     self.Login:SetText(CreateAtlasMarkup("housing-dashboard-timertag-clock-icon").." "..addon.SecondsFormatter:Format(time() - self.Character:GetLoginTime()))
     local first, second = UnitName("player");
     if (first.."-"..second) == self.Character:GetName() then
-        self:SetScript("OnUpdate", function()
+        local x, gc = 0, 0;
+        self:SetScript("OnUpdate", function(_, elapsed)
+            x = (x + elapsed);
+            gc = (gc + elapsed);
+            if (x < 1) then
+                return;
+            end
+            x = 0;
             if self.Character then
                 self.Login:SetText(CreateAtlasMarkup("housing-dashboard-timertag-clock-icon").." "..DIM_GREEN_FONT_COLOR:WrapTextInColorCode(addon.SecondsFormatter:Format(time() - self.Character:GetLoginTime())))
+            end
+            if (gc > 60) then
+                --once a minute, monitor this value
+                collectgarbage();
+                --print("gc")
+                gc = 0;
             end
         end)
     else

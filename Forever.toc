@@ -5,6 +5,7 @@
 ## Notes: Forever, track your characters and more!
 ## SavedVariables: ForeverTBDAccount
 ## SavedVariablesPerCharacter: ForeverTBDCharacter
+## Dependencies: Blizzard_Professions
 
 ## IconAtlas: newplayerchat-chaticon-newcomer
 
@@ -22,6 +23,7 @@
 
 ## X-Curse-Project-ID: 1712490
 
+HelpTips.lua
 Callbacks.lua
 SavedVars.lua
 

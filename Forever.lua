@@ -8,24 +8,27 @@ local SavedVars = addon.SavedVars;
 local ActiveCharacter;
 
 local function UpdateProfessions()
-    print("UpdateProfessions")
+    --print("UpdateProfessions")
     if (ActiveCharacter ~= nil) then
         local prof1, prof2, firstAid, fishing, cooking = GetProfessions();
 
-        local slot1ID = ActiveCharacter:GetProfessionID("prof1");
-        local slot2ID = ActiveCharacter:GetProfessionID("prof2");
+        -- local slot1ID = ActiveCharacter:GetProfessionID("prof1");
+        -- local slot2ID = ActiveCharacter:GetProfessionID("prof2");
+
+        -- print(slot1ID, slot2ID)
+        -- print("=================")
 
 
-        if (slot1ID == slot2ID) then
-            --ActiveCharacter:WipeProfession("prof1");
-        end
+        -- if (slot1ID == slot2ID) then
+        --     --ActiveCharacter:WipeProfession("prof1");
+        -- end
 
 
         --[[
             Profession data can exists in a backwards order, for example
 
             Player learns first profession
-            Player learns seconf profession
+            Player learns second profession
             Player unlearns first profession
 
             Character data now has prof1 data and recipes that no longer exist
@@ -39,24 +42,39 @@ local function UpdateProfessions()
             --local name, icon, skillLevel, maxSkillLevel, numAbilities, spelloffset, skillLine, skillModifier, specializationIndex, specializationOffset, skillLineName = GetProfessionInfo(prof1);
             local profInfo = {GetProfessionInfo(prof1)};
 
+            --print("in prof 1", profInfo[1])
+
+            local slot2ID = ActiveCharacter:GetProfessionID("prof2");
+
             --this data matches existsing slot2 data, update prof2 instead
             if (profInfo[7] == slot2ID) then
+                --print("matches prof2 character data, setting as prof2")
                 ActiveCharacter:SetProfession("prof2", profInfo);
+
 
             --either we have no prof1 data or this is a first time learn
             else
+                --print("didn't match prof2 character data, setting as prof1")
                 ActiveCharacter:SetProfession("prof1", profInfo);
 
             end
         end
 
+        --print("=================")
+
         if (prof2) then
             local profInfo = {GetProfessionInfo(prof2)};
 
+            local slot1ID = ActiveCharacter:GetProfessionID("prof1");
+
+            --print("in prof 2", profInfo[1])
+
             --reverse of above is true here
             if (profInfo[7] == slot1ID) then
+                --print("matches prof1 character data, setting as prof1")
                 ActiveCharacter:SetProfession("prof1", profInfo);
             else
+                --print("didn't match prof1 character data, setting as prof2")
                 ActiveCharacter:SetProfession("prof2", profInfo);
             end
         end
@@ -73,8 +91,6 @@ local function UpdateProfessions()
             ActiveCharacter:SetProfession("firstAid", profInfo);
         end
     end
-
-    collectgarbage();
 end
 
 local function UpdateXP()
@@ -125,18 +141,22 @@ local Events = {
     --"TRADE_SKILL_LIST_UPDATE",
     --"NEW_RECIPE_LEARNED",
     --"ADDON_LOADED",
-    "TRADE_SKILL_DATA_SOURCE_CHANGED",
+    --"TRADE_SKILL_DATA_SOURCE_CHANGED",
     "UNIT_AURA",
+    "UI_INFO_MESSAGE",
 }
 
 
 ForeverTBDMixin = {};
 
 function ForeverTBDMixin:OnLoad()
-    SLASH_FOREVERALTS1 = "/foreveralts";
-    SlashCmdList.FOREVERALTS = function()
+    SLASH_FOREVER1 = "/ftbd";
+    SlashCmdList.FOREVER = function()
         self:Show();
     end
+
+    self.HelpTipButton:SetFrameLevel(self.TitleContainer:GetFrameLevel() + 2);
+    _G[self:GetName().."Portrait"]:SetTexture([[Interface\Addons\Forever\Media\tbd-icon.png]])
 
     table.insert(UISpecialFrames, self:GetName());
 
@@ -152,6 +172,9 @@ function ForeverTBDMixin:OnLoad()
             self:OnTabSelected(tab)
         end)
     end
+    self.selectedTabID = 1;
+
+    self:InitHelpTips();
 
     self:SetupCharacterSummary();
     self:SetupProfessions();
@@ -159,7 +182,51 @@ function ForeverTBDMixin:OnLoad()
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnDataChanged, self.SavedVars_OnDataChanged, self)
 end
 
+function ForeverTBDMixin:InitHelpTips()
+    
+    local helptipAnchors = {
+        [1] = {
+            [1] = self.CharacterSummary.ScrollBox,
+            [2] = self.CharacterSummary.DropdownButtonClass,
+            [3] = self.CharacterSummary.ScrollBox,
+            [4] = self.CharacterSummary.ScrollBox,
+        },
+
+        [2] = {
+            [1] = self.Professions.DropdownSelectProfession,
+            [2] = self.Professions.RecipeSearchBox,
+            [3] = self.Professions.CharacterTreeScrollBox,
+            [4] = self.Professions.SchematicForm,
+        },
+
+        [3] = {
+            [1] = self.Whispers.CharacterScrollBox,
+            [2] = self.Whispers.MessagesScrollBox,
+            [3] = self.Whispers.SendMessageButton,
+        },
+    }
+
+    self.helptipIndex = 0;
+    local function ProgressHelptip()
+        self.helptipIndex = self.helptipIndex + 1;
+        if addon.helptipData[self.selectedTabID] then
+            local helptip = addon.helptipData[self.selectedTabID][self.helptipIndex];
+            if helptip then
+                helptip.onAcknowledgeCallback = ProgressHelptip;
+                HelpTip:Show(self, helptip, helptipAnchors[self.selectedTabID][self.helptipIndex])
+            else
+                self.helptipIndex = 0;
+            end
+        end
+    end
+    self.HelpTipButton:SetScript("OnClick", function()
+        ProgressHelptip()
+    end)
+end
+
 function ForeverTBDMixin:OnTabSelected(tab)
+    HelpTip:HideAll(self)
+    self.helptipIndex = 0;
     for _, tab in ipairs(self.Tabs) do
         tab:SetChecked(false);
     end
@@ -168,6 +235,7 @@ function ForeverTBDMixin:OnTabSelected(tab)
         frame:Hide();
         if (frame:GetID() == tab:GetID()) then
             frame:Show();
+            self.selectedTabID = tab:GetID();
         end
     end
 end
@@ -239,11 +307,32 @@ function ForeverTBDMixin:PLAYER_ENTERING_WORLD(...)
         UpdateProfessions();
 
 
-        -- EventRegistry:RegisterCallback("Professions.ProfessionSelected", function(id, info)
-        --     C_Timer.After(1, function()
-        --         self:ScanRecipes(info.professionID)
-        --     end)
-        -- end)
+        local professionSelected;
+        EventRegistry:RegisterCallback("Professions.ProfessionSelected", function(id, info)
+            professionSelected = info.professionID;
+        end)
+
+        hooksecurefunc(ProfessionsFrame.CraftingPage.RecipeList.ScrollBox, "SetDataProvider", function()
+            local professionID;
+            local professionLink = C_TradeSkillUI.GetTradeSkillListLink();
+            if (professionLink) then
+                local linkType, payload, displayText = LinkUtil.ExtractLink(professionLink);
+                local guid, _, profID = strsplit(":", payload);
+                if tonumber(profID) then
+                    professionID = profID;
+                    --print(professionLink, profID)
+                end
+
+            else
+                if (professionSelected) then
+                    professionID = professionSelected;
+                    --print("no link, falling back to profession selected ID")
+                end
+            end
+            self:ScanRecipes(professionID);
+            professionSelected = nil;
+            --print("hook run > call scan recipes", time())
+        end)
 
 
         --when the player unlearns a profession we want to wipe the Character data for it and the recipes
@@ -309,6 +398,18 @@ function ForeverTBDMixin:PLAYER_MONEY()
     UpdateMoney();
 end
 
+local zoneXpPatternMatch = ("^"..ERR_ZONE_EXPLORED_XP:gsub("%%s", "(.+)")):gsub("%%d", "(%%d+)").."$";
+local zonePatternMatch = "^"..ERR_ZONE_EXPLORED:gsub("%%s", "(.+)").."$";
+function ForeverTBDMixin:UI_INFO_MESSAGE(...)
+    local id, msg = ...;
+    local area, xp;
+    area, xp = msg:match(zoneXpPatternMatch);
+    if (area == nil) then
+        area = msg:match(zonePatternMatch);
+    end
+    --print("Area:", area, "XP:", xp);
+end
+
 function ForeverTBDMixin:ZONE_CHANGED_INDOORS()
     UpdateLocation();
 end
@@ -342,13 +443,11 @@ end
 
 function ForeverTBDMixin:TRADE_SKILL_DATA_SOURCE_CHANGED()
     local professionLink = C_TradeSkillUI.GetTradeSkillListLink();
-    --print(professionLink)
     if (professionLink) then
         local linkType, payload, displayText = LinkUtil.ExtractLink(professionLink);
         local guid, _, profID = strsplit(":", payload);
         if tonumber(profID) then
-            --print(profID)
-            self:ScanRecipes(profID);
+            print(professionLink, profID)
         end
     end
 end
@@ -544,7 +643,6 @@ function ForeverTBDMixin:SetupProfessions()
             end
         end
         self.Professions.CharacterTreeScrollBox:SetDataProvider(dataProvider)
-        --        collectgarbage();
     end
 
     self.Professions.RecipeSearchBox:SetScript("OnTextChanged", function(editBox)
@@ -687,44 +785,39 @@ function ForeverTBDMixin:ScanRecipes(professionID)
         end
     end
 
-    local function ScanDataProvider()
-        if (ProfessionsFrame.CraftingPage.RecipeList.ScrollBox:HasDataProvider() == true) then
-            local recipes = {}
-            for k, element in ProfessionsFrame.CraftingPage.RecipeList.ScrollBox:GetDataProvider():EnumerateEntireRange() do
-                if element.data and element.data.recipeInfo then
-                    local capture = {}
-                    capture.recipeID = element.data.recipeInfo.recipeID
-                    capture.name = element.data.recipeInfo.name
-                    --capture.categoryID = element.data.recipeInfo.categoryID
-                    capture.hyperlink = element.data.recipeInfo.hyperlink
-                    capture.icon = element.data.recipeInfo.icon
-                    --capture.learned = element.data.recipeInfo.learned
-                    capture.maxTrivialLevel = element.data.recipeInfo.maxTrivialLevel
-                    --capture.relativeDifficulty = element.data.recipeInfo.relativeDifficulty
-                    table.insert(recipes, capture)
-                end
+    if (ProfessionsFrame.CraftingPage.RecipeList.ScrollBox:HasDataProvider() == true) then
+        local recipes = {}
+        for k, element in ProfessionsFrame.CraftingPage.RecipeList.ScrollBox:GetDataProvider():EnumerateEntireRange() do
+            if element.data and element.data.recipeInfo then
+                local capture = {}
+                capture.recipeID = element.data.recipeInfo.recipeID
+                capture.name = element.data.recipeInfo.name
+                --capture.categoryID = element.data.recipeInfo.categoryID
+                capture.hyperlink = element.data.recipeInfo.hyperlink
+                capture.icon = element.data.recipeInfo.icon
+                --capture.learned = element.data.recipeInfo.learned
+                capture.maxTrivialLevel = element.data.recipeInfo.maxTrivialLevel
+                --capture.relativeDifficulty = element.data.recipeInfo.relativeDifficulty
+                table.insert(recipes, capture)
             end
-
-            ScanAndSetCharacterRecipes(recipes);
-
-            if (hasUpdated == false) then
-                UpdateProfessions();
-                ScanAndSetCharacterRecipes(recipes);
-            end
-
-            recipes = nil;
         end
+
+        ScanAndSetCharacterRecipes(recipes);
+
+        if (hasUpdated == false) then
+            UpdateProfessions();
+            ScanAndSetCharacterRecipes(recipes);
+        end
+
+        recipes = nil;
+        collectgarbage();
     end
 
-    --could probably move this into the PEW but would need to rejiggle the local functions into the mixin
-    if (RecipeListHooked == false) then
-        hooksecurefunc(ProfessionsFrame.CraftingPage.RecipeList.ScrollBox, "SetDataProvider", function()
-            ScanDataProvider();
-            --print("hook run > call scan recipes")
-        end)
-        RecipeListHooked = true;
-        --print("hook SetDataProvider")
-    end
+    --[[
+        omg how hard is it to keep track fo this stuff without mixing prof data
+
+        gone back to the original method which while limited is at least accurate
+    ]]
 
 end
 

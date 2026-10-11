@@ -9,6 +9,8 @@ addon.Callbacks = {
     Character_OnChanged = "CHARACTER_CHANGED",
     
     Tradeskill_OnSelected = "TRADESKILL_SELECTED",
+
+    Whisper_OnChatHistoryDeleted = "WHISPER_DELETE_CHAT_HISTORY",
 }
 
 local callbacks = {};
