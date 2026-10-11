@@ -5,24 +5,49 @@
         <link rel="stylesheet" href="index.css">
         <title>Forever</title>
     </head>
-    <body>
+    <body style="background-color: #3D4150;">
         <div>
-            <h1>Forever</h1>
-
-            <!-- <p id="test">Whether you're setting out with your first character or returning to Azeroth, Forever helps you keep track of your characters and their adventures.</p>
-            <img id="addon-image" src="Media/CharacterSummary1.PNG"> -->
+            <h1 id="top-header">Forever</h1>
         </div>
         <div>
-            <table>
+            <p id="stub-text">
+                Whether you're setting out with your first character or returning to Azeroth, Forever helps you keep track of your characters and their adventures.
+            </p>
+        </div>
+        <div>
+            <table id="link-button-table">
                 <tr>
                     <td>
-                        <a id="link-button" href="https://www.curseforge.com/wow/addons/forever/preview">Curseforge</a>
+                        <a href="https://www.curseforge.com/wow/addons/forever/preview">
+                            <button class="link-button">
+                                CURSEFORGE
+                            </button>
+                        </a>
                     </td>
                     <td>
-                        <a id="link-button" href="https://linktr.ee/theboringdad">Donate</a>
+                        <a href="https://linktr.ee/theboringdad">
+                            <button class="link-button">
+                                DONATE
+                            </button>
+                        </a>
                     </td>
                 </tr>
             </table>
+        </div>
+        <div class="addon-image-div">
+            <p class="addon-image-header">Character Summary</p>
+            <p class="addon-image-desc">See all your characters in one place, including class, level and XP, location, gold, last login <span style="color: limegreen;">(or login duration)</span> and professions.</p>
+            <img class="addon-image" src="Media/CharacterSummary1.PNG">
+        </div>
+        <div class="addon-image-div">
+            <p class="addon-image-header">Professions</p>
+            <p class="addon-image-desc">Track your characters professions, search and filter for specific recipes.</p>
+            <img class="addon-image" src="Media/Professions1.PNG">
+        </div>
+        <div class="addon-image-div">
+            <p class="addon-image-header">Whispers</p>
+            <p class="addon-image-desc">Manage your whispers in one clean view.</p>
+            <img class="addon-image" src="Media/Whispers1.PNG">
         </div>
     </body>
 </html>
