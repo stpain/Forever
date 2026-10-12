@@ -12,12 +12,14 @@ local Defaults = {
     interactions = {},
     whispers = {},
     journal = {},
+    minimap = {}
 }
 
 function SavedVars:Init(reset)
     --ForeverTBDAccount = nil;
-    if (reset) then
+    if (reset == true) then
         ForeverTBDAccount = nil;
+        addon.Characters = {};
     end
     if (ForeverTBDAccount == nil) then
         ForeverTBDAccount = {};

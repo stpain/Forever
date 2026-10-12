@@ -119,13 +119,14 @@ function ForeverTBDWhispersMixin:OnLoad()
         if (self.currentChatHistoryRecipient == nil) then
             return;
         end
-        local messageText = self.SendMessageInput.EditBox:GetText();
+        --local messageText = self.SendMessageInput.EditBox:GetText();
+        local messageText = self.SendMessageInput:GetText();
         if (messageText == "") then
             return;
         end
         C_ChatInfo.SendChatMessage(messageText, "WHISPER", nil, self.currentChatHistoryRecipient);
-        self.SendMessageInput.EditBox:SetText("");
-        self.SendMessageInput.EditBox:ClearFocus();
+        self.SendMessageInput:SetText("");
+        self.SendMessageInput:ClearFocus();
     end
 
     self.SendMessageButton:Disable()
@@ -133,12 +134,12 @@ function ForeverTBDWhispersMixin:OnLoad()
         SendMessage();
     end)
 
-    self.SendMessageInput.EditBox:SetAutoFocus(false)
-    self.SendMessageInput.EditBox:SetMultiLine(true)
-    self.SendMessageInput.EditBox:SetScript("OnEnterPressed", function(editbox)
+    self.SendMessageInput:SetAutoFocus(false)
+    --self.SendMessageInput:SetMultiLine(true)
+    self.SendMessageInput:SetScript("OnEnterPressed", function(editbox)
         SendMessage();
     end)
-    self.SendMessageInput.EditBox:SetScript("OnTextChanged", function(editbox)
+    self.SendMessageInput:SetScript("OnTextChanged", function(editbox)
         local text = editbox:GetText();
         if (text == "") then
             self.SendMessageButton:Disable();

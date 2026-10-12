@@ -23,6 +23,15 @@
 
 ## X-Curse-Project-ID: 1712490
 
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+Libs\LibDbIcon-1.0\LibDbIcon-1.0.lua
+Libs\ChatThrottleLib.lua
+Libs\LibDeflate\LibDeflate.lua
+Libs\AceComm-3.0\AceComm-3.0.xml
+Libs\LibSerialize\lib.xml
+
 HelpTips.lua
 Callbacks.lua
 SavedVars.lua

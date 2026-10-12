@@ -35,6 +35,30 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                     </Layer>
                 </Layers>
             </Button>
+            <Button parentKey="Options">
+                <Anchors>
+                    <Anchor point="TOPRIGHT" x="-8" y="-27"/>
+                </Anchors>
+                <Size x="32" y="32"/>
+                <NormalTexture atlas="common-button-square-gray-up"/>
+                <PushedTexture atlas="common-button-square-gray-down"/>
+                <HighlightTexture atlas="WoWShare-Highlight">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="5" y="-5"/>
+                        <Anchor point="BOTTOMRIGHT" x="-5" y="5"/>
+                    </Anchors>
+                </HighlightTexture>
+                    <Layers>
+                    <Layer level="OVERLAY">
+                        <Texture atlas="OptionsIcon-Brown">
+                            <Anchors>
+                                <Anchor point="CENTER"/>
+                            </Anchors>
+                            <Size x="14" y="14"/>
+                        </Texture>
+                    </Layer>
+                    </Layers>
+            </Button>
 			<Frame parentKey="Tab1" inherits="ForeverTBDSideTabTemplate" parentArray="Tabs" id="1">
 				<KeyValues>
 					<KeyValue key="tooltipText" value="CHARACTER" type="global"/>
@@ -68,6 +92,21 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                     <Anchor point="TOPLEFT" x="5" y="-60"/>
                     <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
                 </Anchors>
+            </Frame>
+
+            <Frame parentKey="OptionsPanel" parentArray="Views" hidden="true">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-60"/>
+                    <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
+                </Anchors>
+                <Frames>
+                    <Button parentKey="RESET_EVERYTHING" inherits="UIPanelButtonTemplate" text="RESET">
+                        <Anchors>
+                            <Anchor point="CENTER"/>
+                        </Anchors>
+                        <Size x="200" y="24"/>
+                    </Button>
+                </Frames>
             </Frame>
 
             <Frame parentKey="CharacterSummary" parentArray="Views" id="1">

@@ -57,6 +57,9 @@
         "ERR_ZONE_EXPLORED",
         "ERR_ZONE_EXPLORED_XP",
         "HelpTip",
-        "EDIT_MODE_HELPTIPS_LAYOUTS"
+        "EDIT_MODE_HELPTIPS_LAYOUTS",
+        "GameTooltip_AddColoredLine",
+        "GameTooltip_SetDefaultAnchor",
+        "DEFAULT_CHAT_FRAME"
     ]
 }

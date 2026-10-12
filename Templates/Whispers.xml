@@ -116,17 +116,23 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
                 </Anchors>
             </EventFrame>
 
-            <ScrollFrame parentKey="SendMessageInput" inherits="InputScrollFrameTemplate">
+            <EditBox parentKey="SendMessageInput" inherits="InputBoxTemplate" autoFocus="false">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.MessagesScrollBox" relativePoint="BOTTOMLEFT" x="15" y="-15"/>
+                    <Anchor point="BOTTOMRIGHT" x="-60" y="12"/>
+                </Anchors>
+            </EditBox>
+
+            <!-- <ScrollFrame parentKey="SendMessageInput" inherits="InputScrollFrameTemplate">
                 <Anchors>
                     <Anchor point="TOPLEFT" relativeKey="$parent.MessagesScrollBox" relativePoint="BOTTOMLEFT" x="5" y="-8"/>
                     <Anchor point="BOTTOMRIGHT" x="-60" y="12"/>
                 </Anchors>
                 <KeyValues>
                     <KeyValue key="maxLetters" value="250" type="number"/>
-                    <!-- <KeyValue key="instructions" value="PROFESSIONS_CRAFTING_FORM_OPTIONAL_MESSAGE" type="global"/> -->
                     <KeyValue key="hideCharCount" value="false" type="boolean"/>
                 </KeyValues>
-            </ScrollFrame>
+            </ScrollFrame> -->
 
             <Button parentKey="SendMessageButton">
                 <Size x="38" y="38"/>
@@ -140,7 +146,7 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
                     <TexCoords left="1" right="0" top="0" bottom="1"/>
                 </DisabledTexture>
                 <Anchors>
-                    <Anchor point="BOTTOMRIGHT" x="-11" y="10"/>
+                    <Anchor point="BOTTOMRIGHT" x="-11" y="8"/>
                 </Anchors>
             </Button>
             
@@ -164,6 +170,17 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
                     <Anchors>
                         <Anchor point="BOTTOMLEFT" relativeKey="$parent.MessagesScrollBox" relativePoint="TOPLEFT" x="0" y="8"/>
                         <Anchor point="BOTTOMRIGHT" relativeKey="$parent.MessagesScrollBox" relativePoint="TOPRIGHT" x="0" y="8"/>
+                    </Anchors>
+                </Texture>
+                <Texture file="Interface/Buttons/WHITE8x8"> 
+                    <Size y="1"/>
+                    <Gradient orientation="HORIZONTAL">
+                        <MinColor r="0.5" g="0.5" b="0.5" a="1"/>
+                        <MaxColor r="0.5" g="0.5" b="0.5" a="0"/>
+                    </Gradient>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.MessagesScrollBox" relativePoint="BOTTOMLEFT" x="0" y="-4"/>
+                        <Anchor point="TOPRIGHT" relativeKey="$parent.MessagesScrollBox" relativePoint="BOTTOMRIGHT" x="0" y="-4"/>
                     </Anchors>
                 </Texture>
             </Layer>

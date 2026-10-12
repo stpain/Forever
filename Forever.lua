@@ -166,6 +166,23 @@ function ForeverTBDMixin:OnLoad()
 
     self:RegisterForDrag("LeftButton");
 
+    self.Options:SetScript("OnClick", function()
+        for _, frame in ipairs(self.Views) do
+            frame:Hide()
+        end
+        for _, tab in ipairs(self.Tabs) do
+            tab:SetChecked(false);
+        end
+        self.selectedTabID = 0;
+        self.helptipIndex = 0;
+        HelpTip:HideAll(self)
+        self.OptionsPanel:Show();
+    end)
+
+    self.OptionsPanel.RESET_EVERYTHING:SetScript("OnClick", function()
+        SavedVars:Init(true);
+    end)
+
     for _, tab in ipairs(self.Tabs) do
         tab:SetChecked(false);
         tab:SetCustomOnMouseUpHandler(function(tabButton, hwButton, upInside)
@@ -178,8 +195,47 @@ function ForeverTBDMixin:OnLoad()
 
     self:SetupCharacterSummary();
     self:SetupProfessions();
+    
+    self:SetupHooks();
 
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnDataChanged, self.SavedVars_OnDataChanged, self)
+    addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnInitialized, self.SavedVars_OnInitialized, self)
+end
+
+function ForeverTBDMixin:CreateMinimapButton()
+    
+    local iconName = addonName.."MinimapButton";
+    local iconDb = SavedVars:GetTable("minimap");
+
+    local function onClick()
+        self:SetShown(not self:IsVisible())
+    end
+
+    local ldb = LibStub("LibDataBroker-1.1"):NewDataObject(iconName, {
+            type = "launcher",
+            icon = 132222,
+            OnClick = onClick,
+        })
+    LibStub("LibDBIcon-1.0"):Register(iconName, ldb, iconDb)
+
+    local minimapButtonName = string.format("LibDBIcon10_%sMinimapButton", addonName);
+    
+    local button = _G[minimapButtonName];
+    button.icon:SetAtlas("gamepad-radial-icon-shop");
+
+    button.UpdateTooltip = function()
+        GameTooltip:SetOwner(button, "ANCHOR_TOPRIGHT");
+        GameTooltip:AddLine(addonName);
+        --tt:AddLine(" ");
+        --tt:AddLine("");
+
+        GameTooltip:Show();
+    end
+
+    button:SetScript("OnEnter", function()
+        button.UpdateTooltip()
+    end)
+
 end
 
 function ForeverTBDMixin:InitHelpTips()
@@ -224,6 +280,58 @@ function ForeverTBDMixin:InitHelpTips()
     end)
 end
 
+function ForeverTBDMixin:SetupHooks()
+    local professionSelected;
+    EventRegistry:RegisterCallback("Professions.ProfessionSelected", function(id, info)
+        professionSelected = info.professionID;
+        --print("selected prof id set")
+    end)
+    hooksecurefunc(ProfessionsFrame.CraftingPage.RecipeList.ScrollBox, "SetDataProvider", function()
+        --print("Prof data provider set > hook call")
+        if (ActiveCharacter == nil) then
+            return;
+        end
+        local professionID;
+        local professionLink = C_TradeSkillUI.GetTradeSkillListLink();
+        if (professionLink) then
+            local linkType, payload, displayText = LinkUtil.ExtractLink(professionLink);
+            local guid, _, profID = strsplit(":", payload);
+            if tonumber(profID) then
+                professionID = profID;
+                --print(professionLink, profID)
+            end
+        end
+        if (professionID == nil) then
+            if (professionSelected) then
+                professionID = professionSelected;
+                --print("professionID=nil, no link, falling back to profession selected ID")
+            end
+        end
+        self:ScanRecipes(professionID);
+        professionSelected = nil;
+    end)
+
+    --when the player unlearns a profession we want to wipe the Character data for it and the recipes
+    --this will create a nil for the character data slot which allows the UpdateProfessions function to
+    --assign the correct professions
+    hooksecurefunc(C_SkillInfo, "AbandonSkill", function(skillLine)
+        if (ActiveCharacter == nil) then
+            return;
+        end
+        --print("Wiping SkillID", skillLine);
+        local slot1ID = ActiveCharacter:GetProfessionID("prof1");
+        if (slot1ID == skillLine) then
+            ActiveCharacter:WipeProfession("prof1");
+            return;
+        end
+        local slot2ID = ActiveCharacter:GetProfessionID("prof2");
+        if (slot2ID == skillLine) then
+            ActiveCharacter:WipeProfession("prof2");
+            return;
+        end
+    end)
+end
+
 function ForeverTBDMixin:OnTabSelected(tab)
     HelpTip:HideAll(self)
     self.helptipIndex = 0;
@@ -254,112 +362,72 @@ function ForeverTBDMixin:OnHide()
     
 end
 
+function ForeverTBDMixin:SavedVars_OnInitialized()
+    
+    if DevTool.AddData then
+        DevTool:AddData(ForeverTBDAccount, addonName)
+    end
+
+    self:CreateMinimapButton();
+
+    local unit = "player";
+
+    local firstName, surname = UnitName(unit);
+    local name = string.format("%s-%s", firstName, surname);
+
+    ActiveCharacter = SavedVars:FindCharacterByPredicate(function(character)
+        return character.name == name;
+    end)
+
+    if (ActiveCharacter == nil) then
+        ActiveCharacter = SavedVars:NewCharacter();
+    end
+
+    ActiveCharacter:SetName(name);
+
+    --the player might have deleted the character and reused the name
+    --set the class and race IDs to be safe
+    local _, race, raceID = UnitRace(unit);
+    ActiveCharacter:SetRaceID(raceID);
+
+    local factionInfo = C_CreatureInfo.GetFactionInfo(raceID);
+    ActiveCharacter:SetFaction(factionInfo.groupTag);
+
+    local _, class, classID = UnitClass(unit);
+    ActiveCharacter:SetClassID(classID);
+
+    local sex = UnitSex(unit);
+    ActiveCharacter:SetSex(sex);
+
+    local home = GetBindLocation();
+    ActiveCharacter:SetHome(home);
+
+    UpdateLocation();
+    UpdateXP();
+    UpdateMoney();
+    UpdateLevel(UnitLevel("player"));
+    UpdateProfessions();
+
+    if (ActiveCharacter ~= nil) then
+        local loginTime = ActiveCharacter:GetLoginTime();
+        if (loginTime == nil) then
+            local loginTime = time();
+            ActiveCharacter:SetLoginTime(loginTime);
+        end
+    end
+
+    self:LoadCharacterSummaryList();
+end
+
 function ForeverTBDMixin:SavedVars_OnDataChanged()
     self:LoadCharacterSummaryList();
 end
 
 function ForeverTBDMixin:PLAYER_ENTERING_WORLD(...)
     local isInitial, isReload = ...;
-    local unit = "player";
-
+    
     if (isInitial or isReload) then
-
         SavedVars:Init();
-
-        if DevTool.AddData then
-            DevTool:AddData(ForeverTBDAccount, addonName)
-        end
-
-        local firstName, surname = UnitName(unit);
-        local name = string.format("%s-%s", firstName, surname);
-
-        ActiveCharacter = SavedVars:FindCharacterByPredicate(function(character)
-            return character.name == name;
-        end)
-
-        if (ActiveCharacter == nil) then
-            ActiveCharacter = SavedVars:NewCharacter();
-        end
-
-        ActiveCharacter:SetName(name);
-
-        --the player might have deleted the character and reused the name
-        --set the class and race IDs to be safe
-        local _, race, raceID = UnitRace(unit);
-        ActiveCharacter:SetRaceID(raceID);
-
-        local factionInfo = C_CreatureInfo.GetFactionInfo(raceID);
-        ActiveCharacter:SetFaction(factionInfo.groupTag);
-
-        local _, class, classID = UnitClass(unit);
-        ActiveCharacter:SetClassID(classID);
-
-        local sex = UnitSex(unit);
-        ActiveCharacter:SetSex(sex);
-
-        local home = GetBindLocation();
-        ActiveCharacter:SetHome(home);
-
-        UpdateLocation();
-        UpdateXP();
-        UpdateMoney();
-        UpdateLevel(UnitLevel("player"));
-        UpdateProfessions();
-
-
-        local professionSelected;
-        EventRegistry:RegisterCallback("Professions.ProfessionSelected", function(id, info)
-            professionSelected = info.professionID;
-        end)
-
-        hooksecurefunc(ProfessionsFrame.CraftingPage.RecipeList.ScrollBox, "SetDataProvider", function()
-            local professionID;
-            local professionLink = C_TradeSkillUI.GetTradeSkillListLink();
-            if (professionLink) then
-                local linkType, payload, displayText = LinkUtil.ExtractLink(professionLink);
-                local guid, _, profID = strsplit(":", payload);
-                if tonumber(profID) then
-                    professionID = profID;
-                    --print(professionLink, profID)
-                end
-
-            else
-                if (professionSelected) then
-                    professionID = professionSelected;
-                    --print("no link, falling back to profession selected ID")
-                end
-            end
-            self:ScanRecipes(professionID);
-            professionSelected = nil;
-            --print("hook run > call scan recipes", time())
-        end)
-
-
-        --when the player unlearns a profession we want to wipe the Character data for it and the recipes
-        --this will create a nil for the character data slot which allows the UpdateProfessions function to
-        --assign the correct professions
-        hooksecurefunc(C_SkillInfo, "AbandonSkill", function(skillLine)
-            --print("Wiping SkillID", skillLine);
-            local slot1ID = ActiveCharacter:GetProfessionID("prof1");
-            if (slot1ID == skillLine) then
-                ActiveCharacter:WipeProfession("prof1");
-                return;
-            end
-            local slot2ID = ActiveCharacter:GetProfessionID("prof2");
-            if (slot2ID == skillLine) then
-                ActiveCharacter:WipeProfession("prof2");
-                return;
-            end
-        end)
-
-        if (ActiveCharacter ~= nil) then
-            local loginTime = ActiveCharacter:GetLoginTime();
-            if (loginTime == nil) then
-                local loginTime = time();
-                ActiveCharacter:SetLoginTime(loginTime);
-            end
-        end
-
     end
 
     if (isInitial == true) and (ActiveCharacter ~= nil) then
@@ -367,7 +435,6 @@ function ForeverTBDMixin:PLAYER_ENTERING_WORLD(...)
         ActiveCharacter:SetLoginTime(loginTime);
     end
 
-    self:LoadCharacterSummaryList();
 end
 
 
@@ -766,6 +833,10 @@ end
 local RecipeListHooked = false;
 function ForeverTBDMixin:ScanRecipes(professionID)
 
+    if (professionID == nil) then
+        return;
+    end
+
     professionID = tonumber(professionID);
 
     local hasUpdated = false;
@@ -777,7 +848,7 @@ function ForeverTBDMixin:ScanRecipes(professionID)
             local profID = ActiveCharacter:GetProfessionID(profession);
             --print(profID, professionID)
             --print(type(profID), type(professionID));
-            if (ActiveCharacter:GetProfessionID(profession) == professionID) then
+            if (profID ~= nil) and (profID == professionID) then
                 ActiveCharacter:SetProfessionRecipes(profession, recipes);
                 hasUpdated = true;
                 --print("updated prof")
@@ -810,7 +881,7 @@ function ForeverTBDMixin:ScanRecipes(professionID)
         end
 
         recipes = nil;
-        collectgarbage();
+        --collectgarbage();
     end
 
     --[[
