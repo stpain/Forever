@@ -1,0 +1,135 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/AddOns/Blizzard_SharedXML/UI.xsd">
+
+
+    <Frame name="ForeverTBDJourneyEntryTemplate" mixin="ForeverTBDJourneyEntryMixin" virtual="true">
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="Background" setAllPoints="true">
+                    <Color color="DARKGRAY_COLOR"/>
+                </Texture>
+            </Layer>
+            <Layer level="OVERLAY">
+                <Texture parentKey="Icon">
+                    <Anchors>
+                        <Anchor point="LEFT" x="7" y="0"/>
+                    </Anchors>
+                    <Size x="32" y="32"/>
+                </Texture>
+                <!-- <FontString parentKey="Character" inherits="GameFontNormal" justifyH="LEFT" wordwrap="true">
+                    <Anchors>
+                        <Anchor point="LEFT" x="5" y="0"/>
+                    </Anchors>
+                    <Size x="180"/>
+                    <Color color="LORE_TEXT_BODY_COLOR"/>
+                </FontString> -->
+                <FontString parentKey="Activity" inherits="GameFontNormal" justifyH="LEFT" wordwrap="true">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Icon" relativePoint="RIGHT" x="7" y="0"/>
+                    </Anchors>
+                    <Size x="415"/>
+                    <Color color="ARENA_NAME_FONT_COLOR"/>
+                </FontString>
+                <FontString parentKey="Zone" inherits="GameFontNormal" justifyH="LEFT" wordwrap="true">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Activity" relativePoint="RIGHT" x="5" y="0"/>
+                    </Anchors>
+                    <Size x="250"/>
+                    <Color color="ARENA_NAME_FONT_COLOR"/>
+                </FontString>
+                <FontString parentKey="Coords" inherits="GameFontNormal" justifyH="LEFT" wordwrap="false">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Zone" relativePoint="RIGHT" x="5" y="0"/>
+                    </Anchors>
+                    <Size x="90"/>
+                    <Color color="ARENA_NAME_FONT_COLOR"/>
+                </FontString>
+                <FontString parentKey="TimeStamp" inherits="GameFontNormal" justifyH="LEFT" wordwrap="true">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Coords" relativePoint="RIGHT" x="5" y="0"/>
+                    </Anchors>
+                    <Size x="150"/>
+                    <Color color="ARENA_NAME_FONT_COLOR"/>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+            <OnEnter method="OnEnter"/>
+            <OnLeave method="OnLeave"/>
+        </Scripts>
+    </Frame>
+
+
+    <Frame name="ForeverTBDJournal" mixin="ForeverTBDJournalMixin" virtual="true">
+
+        <Layers>
+            <Layer level="OVERLAY">
+                <Texture file="Interface/Buttons/WHITE8x8">
+                    <Color r="0.84765625" g="0.76171875" b="0.1796875" a="0.74"/>
+                    <Size y="2"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="10" y="-26"/>
+                        <Anchor point="TOPRIGHT" x="-10" y="-26"/>
+                    </Anchors>
+                </Texture>
+                <!-- <FontString parentKey="Character" inherits="GameFontNormal" justifyH="LEFT" wordwrap="true" text="CHARACTER">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="10" y="-10"/>
+                    </Anchors>
+                    <Size x="180"/>
+                </FontString> -->
+                <FontString parentKey="Activity" inherits="GameFontNormal" justifyH="LEFT" wordwrap="true" text="LFG_LIST_ACTIVITY">
+                    <Anchors>
+                        <!-- <Anchor point="LEFT" relativeKey="$parent.Character" relativePoint="RIGHT" x="5" y="0"/> -->
+                        <Anchor point="TOPLEFT" x="50" y="-10"/>
+                    </Anchors>
+                    <Size x="415"/>
+                    <!-- <Color color="ARENA_NAME_FONT_COLOR"/> -->
+                </FontString>
+                <FontString parentKey="Zone" inherits="GameFontNormal" justifyH="LEFT" wordwrap="true" text="ZONE">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Activity" relativePoint="RIGHT" x="5" y="0"/>
+                    </Anchors>
+                    <Size x="250"/>
+                    <!-- <Color color="ARENA_NAME_FONT_COLOR"/> -->
+                </FontString>
+                <FontString parentKey="Coords" inherits="GameFontNormal" justifyH="LEFT" wordwrap="false" text="LOCATION">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Zone" relativePoint="RIGHT" x="5" y="0"/>
+                    </Anchors>
+                    <Size x="90"/>
+                    <!-- <Color color="ARENA_NAME_FONT_COLOR"/> -->
+                </FontString>
+                <FontString parentKey="TimeStamp" inherits="GameFontNormal" justifyH="LEFT" wordwrap="true" text="TIME">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Coords" relativePoint="RIGHT" x="5" y="0"/>
+                    </Anchors>
+                    <Size x="150"/>
+                    <!-- <Color color="ARENA_NAME_FONT_COLOR"/> -->
+                </FontString>
+            </Layer>
+        </Layers>
+
+        <Frames>
+            <Frame parentKey="ScrollBox" inherits="WowScrollBoxList" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-30"/>
+                    <Anchor point="BOTTOMRIGHT" x="-25" y="5"/>
+                </Anchors>
+            </Frame>
+
+            <EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.ScrollBox" relativePoint="TOPRIGHT" x="5" y="-5"/>
+                    <Anchor point="BOTTOMLEFT" relativeKey="$parent.ScrollBox" relativePoint="BOTTOMRIGHT" x="5" y="5"/>
+                </Anchors>
+            </EventFrame>
+        </Frames>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+            <OnEvent method="OnEvent"/>
+        </Scripts>
+    </Frame>
+
+</Ui>

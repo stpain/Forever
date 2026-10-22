@@ -49,6 +49,15 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
 
 
     <Frame name="ForeverTBDWhisperMessageTemplate" mixin="ForeverTBDWhisperMessageMixin" virtual="true">
+        <Layers>
+            <Layer level="OVERLAY">
+                <FontString parentKey="DateDividerText" inherits="GameFontWhite">
+                    <Anchors>
+                        <Anchor point="CENTER" x="0" y="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
         <Frames>
             <Frame parentKey="Bubble">
                 <Anchors>
@@ -88,7 +97,7 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
         <Frames>
             <Frame parentKey="CharacterScrollBox" inherits="WowScrollBoxList">
                 <Anchors>
-                    <Anchor point="TOPLEFT" x="5" y="-40"/>
+                    <Anchor point="TOPLEFT" x="5" y="-10"/>
                     <Anchor point="BOTTOMLEFT" x="5" y="5"/>
                 </Anchors>
                 <Size x="265"/>

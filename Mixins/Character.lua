@@ -6,19 +6,17 @@ local addonName, addon = ...;
 local Character = {};
 
 function Character:GetName(format)
-    if (format == nil) then
-        return self.data.name;
-
-    elseif (format == "chat") then
+    if (format == "chat") then
         local name = string.gsub(self.data.name, "-", " ");
         return name;
-
     elseif (format == "colourized") then
         local _, class = GetClassInfo(self.data.classID);
         if class then
-            return RAID_CLASS_COLORS[class]:WrapTextInColorCode(self.data.name);
+            local name = string.gsub(self.data.name, "-", " ");
+            return RAID_CLASS_COLORS[class]:WrapTextInColorCode(name);
         end
     end
+    return self.data.name;
 end
 
 function Character:SetName(name)
@@ -30,6 +28,16 @@ function Character:SetName(name)
     if (isNew == true) then
         addon.CallbackRegistry:TriggerEvent(addon.Callbacks.Character_OnChanged);
     end
+end
+
+function Character:SetResting(isResting)
+    self.data.isResting = isResting;
+    --print("Character > ", tostring(self.data.isResting));
+    addon.CallbackRegistry:TriggerEvent(addon.Callbacks.Character_OnChanged);
+end
+
+function Character:GetResting()
+    return self.data.isResting;
 end
 
 function Character:GetSex()
@@ -211,31 +219,24 @@ function Character:SetProfessionRecipes(slot, recipes)
     end
 end
 
-function Character:GetProfessionRecipes(slot)
+function Character:GetProfessionRecipeIDs(slot)
     local key = string.format("%sRecipes", slot);
     return self.data[key] or {};
 end
 
-function Character:SearchRecipes(searchTerm)
-    local ret = {};
-    local lowerName;
-    searchTerm = searchTerm:lower()
+function Character:HasRecipe(recipeID)
     local keys = { "prof1Recipes", "prof2Recipes", "cookingRecipes", "fishingRecipes", "firstAidRecipes" };
     for _, key in ipairs(keys) do
         if self.data[key] then
-            for _, recipe in ipairs(self.data[key]) do
-                if (searchTerm == recipe.recipeID) then
-                    table.insert(ret, recipe);
-                end
-                lowerName = recipe.name:lower();
-                if (string.find(lowerName, searchTerm, nil, true)) then
-                    table.insert(ret, recipe);
-                end
+            -- for _, _recipeID in ipairs(self.data[key]) do
+
+            -- end
+            if tContains(self.data[key], recipeID) then
+                return true;
             end
         end
     end
-    lowerName = nil;
-    return ret;
+    return false;
 end
 
 function Character:SetXP(xp, xpMax)

@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Author: TheBoringDad
-## Version: 0.1
+## Version: 0.11
 ## Title: Forever
 ## Notes: Forever, track your characters and more!
 ## SavedVariables: ForeverTBDAccount
@@ -32,22 +32,29 @@ Libs\LibDeflate\LibDeflate.lua
 Libs\AceComm-3.0\AceComm-3.0.xml
 Libs\LibSerialize\lib.xml
 
+Locales.lua
 HelpTips.lua
 Callbacks.lua
 SavedVars.lua
 
 Mixins\Buttons.lua
+
 Mixins\Character.lua
+
 Mixins\CharacterSummary.lua
 Mixins\RecipeSchematic.lua
 Mixins\Whispers.lua
+Mixins\Journal.lua
+#Mixins\Interactions.lua
+
+Templates\DropdownButton.xml
+Templates\SearchBox.xml
 
 Templates\CharacterSummary.xml
-Templates\DropdownButton.xml
-Templates\ProfessionListButton.xml
 Templates\RecipeSchematic.xml
-Templates\SearchBox.xml
 Templates\Whispers.xml
+Templates\Journal.xml
+#Templates\Interactions.xml
 
 Forever.lua
 Forever.xml

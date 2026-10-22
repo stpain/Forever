@@ -1,6 +1,17 @@
 
 
+--[[
+    Totem Bar bindings
+]]
+_G["BINDING_NAME_CLICK MultiCastActionButton1:LeftButton"] = "Earth Totems"
+_G["BINDING_NAME_CLICK MultiCastActionButton2:LeftButton"] = "Fire Totems"
+_G["BINDING_NAME_CLICK MultiCastActionButton3:LeftButton"] = "Water Totems"
+_G["BINDING_NAME_CLICK MultiCastActionButton4:LeftButton"] = "Air Totems"
+
+
+
 local addonName, addon = ...;
+
 
 
 addon.helptipData = {
@@ -13,7 +24,7 @@ addon.helptipData = {
             targetPoint = HelpTip.Point.TopEdgeCenter,
         },
         {
-            text = "You can filter the list by class or profession.",
+            text = "You can filter the list by faction, class or profession.",
             buttonStyle = HelpTip.ButtonStyle.Next,
             targetPoint = HelpTip.Point.LeftEdgeCenter,
         },

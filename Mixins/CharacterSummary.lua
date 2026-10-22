@@ -4,7 +4,7 @@ local addonName, addon = ...;
 
 local SavedVars = addon.SavedVars;
 
-ForeverTBDCharacterSummaryMixin = {}
+ForeverTBDCharacterSummaryCharacterMixin = {}
 
 
 local function SetProfessionTooltip(parent, text, _min, _max, current, label)
@@ -52,11 +52,12 @@ local function ResetProfessionButton(button)
     SetItemButtonCount(button, nil);
 end
 
-function ForeverTBDCharacterSummaryMixin:OnLoad()
+function ForeverTBDCharacterSummaryCharacterMixin:OnLoad()
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.Character_OnChanged, self.Character_OnChanged, self);
+    addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnConfigChanged, self.Character_OnChanged, self);
 end
 
-function ForeverTBDCharacterSummaryMixin:OnClick(...)
+function ForeverTBDCharacterSummaryCharacterMixin:OnClick(...)
     local mouseButton, _ = ...;
 
     if (mouseButton == "RightButton") and (self.Character ~= nil) then
@@ -72,7 +73,7 @@ function ForeverTBDCharacterSummaryMixin:OnClick(...)
     end
 end
 
-function ForeverTBDCharacterSummaryMixin:ClearCharacter()
+function ForeverTBDCharacterSummaryCharacterMixin:ClearCharacter()
     self.Character = nil;
     self.Background:SetColorTexture(0,0,0,0);
     self.Name:SetText("");
@@ -90,16 +91,34 @@ function ForeverTBDCharacterSummaryMixin:ClearCharacter()
     ResetProfessionButton(self.FirstAidButton);
 end
 
-function ForeverTBDCharacterSummaryMixin:Init(character)
+function ForeverTBDCharacterSummaryCharacterMixin:Init(character)
     self.Character = character;
     self:UpdateCharacter();
 end
 
-function ForeverTBDCharacterSummaryMixin:UpdateCharacter()
+function ForeverTBDCharacterSummaryCharacterMixin:UpdateCharacter()
 
     if (self.Character == nil) then
         self:ClearCharacter();
         return;
+    end
+
+    local shouldShowRestedAnim = SavedVars:GetConfig("displayRestedFlipbook");
+    if (shouldShowRestedAnim.value == true) then
+        --print("Show Anim = true");
+        local isResting = self.Character:GetResting();
+        --print(tostring(isResting), self.Character.data.name);
+        if isResting == true then
+            self.PlayerRestLoop:Show();
+            self.PlayerRestLoop.PlayerRestLoopAnim:Play();
+        else
+            self.PlayerRestLoop.PlayerRestLoopAnim:Stop();
+            self.PlayerRestLoop:Hide()
+        end
+    else
+        --print("Show Anim = false");
+        self.PlayerRestLoop.PlayerRestLoopAnim:Stop();
+        self.PlayerRestLoop:Hide()
     end
 
     local classLocale, class = GetClassInfo(self.Character:GetClassID());
@@ -108,7 +127,7 @@ function ForeverTBDCharacterSummaryMixin:UpdateCharacter()
     self.Background:SetGradient("HORIZONTAL", CreateColor(r, g, b, 0.2), CreateColor(r, g, b, 0));
 
     --self.Name:SetText("|cffffffff"..self.Character.data.name);
-    self.Name:SetText(RAID_CLASS_COLORS[class]:WrapTextInColorCode(self.Character:GetName()));
+    self.Name:SetText(self.Character:GetName("colourized"));
     self.Level:SetText(LEVEL..": "..self.Character:GetLevel().." "..classLocale)-- RAID_CLASS_COLORS[class]:WrapTextInColorCode(classLocale));
 
     --self.HomeLocation:SetText(string.format("%s |cffffffff%s|r", CreateAtlasMarkup("Innkeeper", 22, 22), self.Character.data.home or "-"));
@@ -151,7 +170,19 @@ function ForeverTBDCharacterSummaryMixin:UpdateCharacter()
         self.XP.Bar:SetValue(0);
     end
 
-    local raceInfo = C_CreatureInfo.GetRaceInfo(self.Character:GetRaceID())
+    local raceInfo = C_CreatureInfo.GetRaceInfo(self.Character:GetRaceID());
+
+    --QuestPortraitIcon-Horde-small questlog-questtypeicon-horde
+    if self.Character:GetFaction() == "Horde" then
+        self.FactionIcon:SetAtlas("UI-HUD-UnitFrame-SmallCircle-Horde")
+    elseif self.Character:GetFaction() == "Alliance" then
+        self.FactionIcon:SetAtlas("UI-HUD-UnitFrame-SmallCircle-Alliance")
+    end
+
+    --scourge fix
+    if raceInfo.clientFileString == "Scourge" then
+        raceInfo.clientFileString = "Undead";
+    end
     if (self.Character:GetSex() == 3) then
         self.RaceIcon:SetAtlas(string.format("raceicon128-%s-female", raceInfo.clientFileString:lower()));
     elseif (self.Character:GetSex() == 2) then
@@ -191,7 +222,7 @@ function ForeverTBDCharacterSummaryMixin:UpdateCharacter()
 
 end
 
-function ForeverTBDCharacterSummaryMixin:Character_OnChanged()
+function ForeverTBDCharacterSummaryCharacterMixin:Character_OnChanged()
     self:UpdateCharacter();
 end
 
@@ -211,3 +242,226 @@ end
             SetItemButtonNameFrameVertexColor(button, 0.9, 0, 0);
         end
 ]]
+
+
+
+
+ForeverTBDCharacterSummaryMixin = {};
+
+function ForeverTBDCharacterSummaryMixin:OnLoad()
+    self:SetupCharacterSummary();
+    addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnInitialized, self.LoadCharacterSummaryList, self);
+    addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnDataChanged, self.LoadCharacterSummaryList, self);
+end
+
+
+
+function ForeverTBDCharacterSummaryMixin:SetupCharacterSummary()
+
+    --[[
+        Setup the main listbox
+        uses the 'ForeverTBDCharacterSummaryTemplate' template
+    ]]
+    local characterSummaryView = CreateScrollBoxListLinearView();
+    characterSummaryView:SetElementExtent(70);
+    characterSummaryView:SetElementResetter(function(frame)
+        frame:ClearCharacter();
+    end)
+    characterSummaryView:SetElementInitializer("ForeverTBDCharacterSummaryTemplate", function(frame, data)
+        frame:Init(data);
+    end)
+    ScrollUtil.InitScrollBoxListWithScrollBar(self.ScrollBox, self.ScrollBar, characterSummaryView);
+
+    local hordeFactionInfo = C_CreatureInfo.GetFactionInfo(2); --orc
+    local allianceFactionInfo = C_CreatureInfo.GetFactionInfo(1); --human
+
+    --faction menu
+    self.DropdownButtonFaction.OpenMenu:SetScript("OnClick", function()
+        local menu = MenuUtil.CreateContextMenu(self.DropdownButtonFaction, function(owner, rootDescription)
+            rootDescription:CreateTitle(FILTER);
+            rootDescription:CreateButton(ALL, function()
+                self.DropdownButtonFaction.Text:SetText(FACTION);
+                self:LoadCharacterSummaryList({
+                    key = "faction",
+                    func = nil;
+                })
+            end)
+            rootDescription:CreateDivider();
+
+            rootDescription:CreateButton(allianceFactionInfo.name, function()
+                self.DropdownButtonFaction.Text:SetText(allianceFactionInfo.name);
+                local filter = function(character)
+                    return character:GetFaction() == "Alliance";
+                end
+                self:LoadCharacterSummaryList({
+                    key = "faction",
+                    func = filter,
+                });
+            end)
+            rootDescription:CreateButton(hordeFactionInfo.name, function()
+                self.DropdownButtonFaction.Text:SetText(hordeFactionInfo.name);
+                local filter = function(character)
+                    return character:GetFaction() == "Horde";
+                end
+                self:LoadCharacterSummaryList({
+                    key = "faction",
+                    func = filter,
+                });
+            end)
+        end)
+        menu:ClearAllPoints();
+        menu:SetPoint("TOPLEFT", self.DropdownButtonFaction, "BOTTOMLEFT", 3, 0);
+    end)
+
+
+    --[[
+        Create the class filter menu button
+    ]]
+    self.DropdownButtonClass.OpenMenu:SetScript("OnClick", function()
+        local menu = MenuUtil.CreateContextMenu(self.DropdownButtonClass, function(owner, rootDescription)
+            rootDescription:CreateTitle(FILTER);
+            rootDescription:CreateButton(ALL, function()
+                self.DropdownButtonClass.Text:SetText(CLASS);
+                self:LoadCharacterSummaryList({
+                    key = "classID",
+                    func = nil;
+                })
+            end)
+            rootDescription:CreateDivider();
+
+            for i = 1, 12 do
+                    local class, _, classID = GetClassInfo(i);
+                if (class and classID) then
+                    rootDescription:CreateButton(class, function()
+                        self.DropdownButtonClass.Text:SetText(class);
+                        local filter = function(character)
+                            return character:GetClassID() == classID;
+                        end
+                        self:LoadCharacterSummaryList({
+                            key = "classID",
+                            func = filter,
+                        });
+                    end)
+                end
+            end
+        end)
+
+        menu:ClearAllPoints();
+        menu:SetPoint("TOPLEFT", self.DropdownButtonClass, "BOTTOMLEFT", 3, 0);
+    end)
+
+    --[[
+        Create the profession filter menu button
+    ]]
+    local professions = {
+        171,
+        164,
+        333,
+        202,
+        165,
+        197,
+        185,
+        356,
+        129,
+        182,
+        186,
+        393,
+    }
+    self.DropdownButtonProfession.OpenMenu:SetScript("OnClick", function()
+        local menu = MenuUtil.CreateContextMenu(self.DropdownButtonProfession, function(owner, rootDescription)
+            rootDescription:CreateTitle(FILTER);
+            rootDescription:CreateButton(ALL, function()
+                self.DropdownButtonProfession.Text:SetText(PROFESSIONS_BUTTON);
+                self:LoadCharacterSummaryList({
+                    key = "profession",
+                    func = nil;
+                })
+            end)
+            rootDescription:CreateDivider();
+                for _, id in ipairs(professions) do
+                local profName = C_TradeSkillUI.GetTradeSkillDisplayName(id)
+                rootDescription:CreateButton(profName, function()
+                    self.DropdownButtonProfession.Text:SetText(profName);
+                    local filter = function(character)
+                        local prof1 = character:GetProfession("prof1");
+                        local prof2 = character:GetProfession("prof2");
+                        if prof1 and (prof1[7] == id) then
+                            return true;
+                        end
+                        if prof2 and (prof2[7] == id) then
+                            return true;
+                        end
+                        
+                        --for these we just need to know if it exists and has skillLevel
+                        if (id == 185) then
+                            local cooking = character:GetProfession("cooking");
+                            if cooking and cooking[3] and (cooking[3] > 0) then
+                                return true;
+                            end
+                        end
+                        if (id == 129) then
+                            local firstAid = character:GetProfession("firstAid");
+                            if firstAid and firstAid[3] and (firstAid[3] > 0) then
+                                return true;
+                            end
+                        end
+                        if (id == 356) then
+                            local fishing = character:GetProfession("fishing");
+                            if fishing and fishing[3] and (fishing[3] > 0) then
+                                return true;
+                            end
+                        end
+                    end
+                    self:LoadCharacterSummaryList({
+                        key = "profession",
+                        func = filter,
+                    });
+                end)
+            end
+        end)
+
+        menu:ClearAllPoints();
+        menu:SetPoint("TOPLEFT", self.DropdownButtonProfession, "BOTTOMLEFT", 3, 0);
+    end)
+
+    self.filters = {};
+end
+
+
+---Loads Characters into the summary using set filters, if none it loads all characters
+---@param filter table? { key=filterKey, func=function, } the filterKey is used to manage adding/updating/removing the filter, the func is passed the Character and should return true for valid matches
+function ForeverTBDCharacterSummaryMixin:LoadCharacterSummaryList(filter)
+
+    if (filter) then
+        self.filters[filter.key] = filter.func;
+    end
+
+    local dataProvider = CreateDataProvider();
+
+
+    --default sorting for now
+    table.sort(addon.Characters, function(a, b)
+        return a.data.loginTime > b.data.loginTime;
+    end)
+
+
+    if next(self.filters) ~= nil then
+        for _, character in ipairs(addon.Characters) do
+            local isMatch = true;
+            for k, filter in pairs(self.filters) do
+                if filter(character) ~= true then
+                    isMatch = false;
+                end
+            end
+            if (isMatch == true) then
+                dataProvider:Insert(character);
+            end
+        end
+    else
+        for _, character in ipairs(addon.Characters) do
+            dataProvider:Insert(character);
+        end
+    end
+
+    self.ScrollBox:SetDataProvider(dataProvider);
+end

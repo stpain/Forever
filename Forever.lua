@@ -2,8 +2,41 @@
 
 local addonName, addon = ...;
 
+
+--should move this later
+StaticPopupDialogs['ForeverConfirmTakeInboxGoldDialog'] = {
+    text = addon.locales.confirmTakeInboxGoldDialogText_S,
+    button1 = YES,
+    button2 = NO,
+    button3 = REPORT_PLAYER,
+    OnAccept = function(self, data)
+        OpenMailFrame.updateButtonPositions = false;
+        TakeInboxMoney(InboxFrame.openMailID);
+    end,
+    OnCancel = function()
+        
+    end,
+    OnAlt = function(self, data)
+        -- local reportInfo = ReportInfo:CreateMailReportInfo(Enum.ReportType.Mail, InboxFrame.openMailID);
+        -- if (reportInfo) then
+        --     local reportTarget = ConsortiumMailFrame:IsShown() and C_Mail.GetCraftingOrderMailInfo(InboxFrame.openMailID).crafterName or InboxFrame.openMailSender;
+        --     ReportFrame:InitiateReport(reportInfo, reportTarget);
+        -- end
+        -- OpenMailFrame.ReportSpamButton:Disable();
+
+        OpenMailReportSpamButton:Click();
+    end,
+    OnShow = function(self, data)
+
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = false,
+}
+
+
+
 local SavedVars = addon.SavedVars;
---local Characters = addon.Characters;
 
 local ActiveCharacter;
 
@@ -137,13 +170,15 @@ local Events = {
     "ZONE_CHANGED",
     "ZONE_CHANGED_INDOORS",
     "ZONE_CHANGED_NEW_AREA",
-    "PLAYER_LOGOUT",
+    --"PLAYER_LOGOUT",
     --"TRADE_SKILL_LIST_UPDATE",
     --"NEW_RECIPE_LEARNED",
     --"ADDON_LOADED",
     --"TRADE_SKILL_DATA_SOURCE_CHANGED",
     "UNIT_AURA",
     "UI_INFO_MESSAGE",
+    "PLAYER_INTERACTION_MANAGER_FRAME_SHOW",
+    "PLAYER_UPDATE_RESTING",
 }
 
 
@@ -179,27 +214,139 @@ function ForeverTBDMixin:OnLoad()
         self.OptionsPanel:Show();
     end)
 
+    --button = _G["MailItem"..i.."Button"];
+
+    --[[
+        hook InboxFrame:Update and loop buttons check for money and disable
+    ]]
+
     self.OptionsPanel.RESET_EVERYTHING:SetScript("OnClick", function()
         SavedVars:Init(true);
     end)
 
-    for _, tab in ipairs(self.Tabs) do
+    self.selectedTabID = 1;
+    for k, tab in ipairs(self.Tabs) do
         tab:SetChecked(false);
         tab:SetCustomOnMouseUpHandler(function(tabButton, hwButton, upInside)
-            self:OnTabSelected(tab)
+            self:OnTabSelected(tab);
         end)
+        if (k == self.selectedTabID) then
+            self:OnTabSelected(tab);
+        end
     end
-    self.selectedTabID = 1;
 
     self:InitHelpTips();
-
-    self:SetupCharacterSummary();
     self:SetupProfessions();
-    
     self:SetupHooks();
 
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnDataChanged, self.SavedVars_OnDataChanged, self)
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnInitialized, self.SavedVars_OnInitialized, self)
+end
+
+function ForeverTBDMixin:CreateOptions()
+
+    --[[
+        Options panel, designed for future options,
+        currently using checkboxes but open to new option templates
+
+        The ConfigInitializer will check for a key which is used
+        to determine the functionality
+
+        for example a bool toggle uses a .Checkbox which sets up
+        with a GetConfig and SetConfig 
+    ]]
+
+    local layout = {
+
+        --this can become a menu on the left
+        general = {
+
+            -- the SavedVars .config key and template to use
+            --the key is important and is also a locale lookup
+            {
+                configKey = "autoVendorJunk",
+                configTemplate = "ForeverTBDOptionsListCheckboxTemplate"
+            },
+            {
+                configKey = "disableInboxGold",
+                configTemplate = "ForeverTBDOptionsListCheckboxTemplate"
+            },
+            {
+                configKey = "displayRestedFlipbook",
+                configTemplate = "ForeverTBDOptionsListCheckboxTemplate"
+            },
+            {
+                configKey = "useServerTimeForJournal",
+                configTemplate = "ForeverTBDOptionsListCheckboxTemplate"
+            },
+        }
+    }
+
+    -- local function TooltipFunc()
+
+    -- end
+
+    local function ConfigInitializer(frame, elementData)
+        local currentConfig = SavedVars:GetConfig(elementData.configKey);
+
+        --DevTools_Dump({elementData})
+        --DevTools_Dump(addon.locales)
+        local displayText = addon.locales[elementData.configKey];
+        frame.Text:SetText(displayText);
+
+        frame:SetScript("OnEnter", function()
+            frame.HoverBackground:Show();
+            if addon.locales[elementData.configKey.."_TT"] then
+                GameTooltip:SetOwner(frame, "ANCHOR_TOP", 90);
+                GameTooltip:AddLine(displayText, 1,1,1);
+                GameTooltip:AddLine(addon.locales[elementData.configKey.."_TT"], nil, nil, nil, true)
+                GameTooltip:Show();
+            end
+        end)
+        frame:SetScript("OnLeave", function()
+            frame.HoverBackground:Hide();
+            GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+        end)
+
+        frame.NewFeature:Show();
+        
+        if (frame.CheckBox) then
+            frame.CheckBox:SetChecked(currentConfig.value);
+
+            frame.CheckBox:SetScript("OnClick", function(checkbox)
+                SavedVars:SetConfig(elementData.configKey, checkbox:GetChecked());
+            end)
+            return;
+        end
+    end
+
+    --doing this for future reference on order
+    local topPadding = 1;
+    local bottomPadding = 1;
+	local leftPadding = 1;
+	local rightPadding = 1;
+	local spacing = 1;
+    local optionsList = CreateScrollBoxListLinearView(topPadding, bottomPadding, leftPadding, rightPadding, spacing);
+    optionsList:SetElementExtent(26);
+    optionsList:SetElementResetter(function(frame)
+        
+    end)
+    optionsList:SetElementFactory(function(factory, elementData)
+        factory(elementData.template, elementData.initializer)
+    end)
+    ScrollUtil.InitScrollBoxListWithScrollBar(self.OptionsPanel.ScrollBox, self.OptionsPanel.ScrollBar, optionsList);
+
+    local dataProvider = CreateDataProvider();
+
+    for _, opt in ipairs(layout.general) do
+        dataProvider:Insert({
+            template = opt.configTemplate,
+            initializer = ConfigInitializer,
+            configKey = opt.configKey,
+        })
+    end
+    
+    optionsList:SetDataProvider(dataProvider, true);
 end
 
 function ForeverTBDMixin:CreateMinimapButton()
@@ -215,13 +362,64 @@ function ForeverTBDMixin:CreateMinimapButton()
             type = "launcher",
             icon = 132222,
             OnClick = onClick,
-        })
+    })
+    if ldb == nil then
+        return;
+    end
     LibStub("LibDBIcon-1.0"):Register(iconName, ldb, iconDb)
 
     local minimapButtonName = string.format("LibDBIcon10_%sMinimapButton", addonName);
     
     local button = _G[minimapButtonName];
     button.icon:SetAtlas("gamepad-radial-icon-shop");
+    button.icon:ClearAllPoints();
+    button.icon:SetPoint("TOPLEFT", 1, -1);
+    button.icon:SetPoint("BOTTOMRIGHT", 1, -1);
+
+    button.iconMask = button:CreateMaskTexture();
+    button.iconMask:SetPoint("TOPLEFT", 4, -4);
+    button.iconMask:SetPoint("BOTTOMRIGHT", 1, -1);
+    button.iconMask:SetTexture("Interface/CHARACTERFRAME/TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE");
+    button.icon:AddMaskTexture(button.iconMask);
+    
+
+    local flipbookAtlasName = button:GetName() .. "FlipbookTexture"
+    local flipbookAtlas = button:CreateTexture(flipbookAtlasName, "OVERLAY");
+    flipbookAtlas:SetPoint("CENTER", 0, 0);
+    flipbookAtlas:SetSize(80, 80);
+    flipbookAtlas:SetAtlas("dragonriding_sgvigor_burst_flipbook");
+    flipbookAtlas:SetAlpha(0)
+
+    local animGroup = button:CreateAnimationGroup();
+    animGroup:SetToFinalAlpha(true);
+
+    local flipbook = animGroup:CreateAnimation("FlipBook");
+    flipbook:SetFlipBookColumns(4);
+    flipbook:SetFlipBookRows(4);
+    flipbook:SetFlipBookFrameHeight(0);
+    flipbook:SetFlipBookFrameWidth(0);
+    flipbook:SetFlipBookFrames(16);
+    flipbook:SetTargetName(flipbookAtlasName);
+    flipbook:SetDuration(0.7);
+    flipbook:SetOrder(1);
+
+    local alphaOut = animGroup:CreateAnimation("Alpha");
+    alphaOut:SetOrder(1);
+    alphaOut:SetStartDelay(0.7)
+    alphaOut:SetDuration(0.3);
+    alphaOut:SetTargetName(flipbookAtlasName);
+    alphaOut:SetFromAlpha(1);
+    alphaOut:SetFromAlpha(0);
+
+    animGroup:SetScript("OnFinished", function()
+        --button.icon:Show();
+        C_Timer.After(0.75, function()
+            if button:IsMouseOver() then
+                flipbookAtlas:SetAlpha(1);
+                animGroup:Play();
+            end
+        end)
+    end)
 
     button.UpdateTooltip = function()
         GameTooltip:SetOwner(button, "ANCHOR_TOPRIGHT");
@@ -233,8 +431,20 @@ function ForeverTBDMixin:CreateMinimapButton()
     end
 
     button:SetScript("OnEnter", function()
-        button.UpdateTooltip()
+        button.UpdateTooltip();
+        --button.icon:Hide();
+        flipbookAtlas:SetAlpha(1);
+        animGroup:Play();
     end)
+
+    button:SetScript("OnLeave", function()
+        GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+        animGroup:Stop();
+        flipbookAtlas:SetAlpha(0);
+        --button.icon:Show();
+    end)
+
+    --dragonriding_sgvigor_burst_flipbook UF-Essence-Flipbook-FX-Circ
 
 end
 
@@ -243,7 +453,7 @@ function ForeverTBDMixin:InitHelpTips()
     local helptipAnchors = {
         [1] = {
             [1] = self.CharacterSummary.ScrollBox,
-            [2] = self.CharacterSummary.DropdownButtonClass,
+            [2] = self.CharacterSummary.DropdownButtonFaction,
             [3] = self.CharacterSummary.ScrollBox,
             [4] = self.CharacterSummary.ScrollBox,
         },
@@ -282,6 +492,11 @@ end
 
 function ForeverTBDMixin:SetupHooks()
     local professionSelected;
+
+    ProfessionsFrame:HookScript("OnHide", function()
+        self.lastProfessionID = nil;
+    end)
+
     EventRegistry:RegisterCallback("Professions.ProfessionSelected", function(id, info)
         professionSelected = info.professionID;
         --print("selected prof id set")
@@ -330,6 +545,41 @@ function ForeverTBDMixin:SetupHooks()
             return;
         end
     end)
+
+
+    --[[
+        With the RMT issues and Blizzard taking action
+        its possible to get sent gold from a bad actor
+
+        The aim here is to prevent the player from accidently
+        taking gold from their inbox.
+
+        Blizzard OpenMailmoneyButton script
+            OpenMailFrame.updateButtonPositions = false;
+            TakeInboxMoney(InboxFrame.openMailID);
+    ]]
+    OpenMailMoneyButton:HookScript("OnShow", function(button)
+        local bodyText, stationeryID1, stationeryID2, isTakeable, isInvoice, isConsortium = GetInboxText(InboxFrame.openMailID);
+        if (isInvoice == true) then
+            --AH invoice should be legit gold
+            return;
+        end
+
+        local shouldDisableMailGold = SavedVars:GetConfig("disableInboxGold");
+        if (shouldDisableMailGold.value == true) then
+            --local packageIcon, stationeryIcon, sender, subject, money, CODAmount, daysLeft, itemCount, wasRead, wasReturned, textCreated, canReply = GetInboxHeaderInfo(InboxFrame.openMailID);
+            local sender = select(3, GetInboxHeaderInfo(InboxFrame.openMailID));
+            button:SetScript("OnClick", function()
+                StaticPopup_Show("ForeverConfirmTakeInboxGoldDialog", sender)
+            end)
+        else
+            button:SetScript("OnClick", function()
+                OpenMailFrame.updateButtonPositions = false;
+                TakeInboxMoney(InboxFrame.openMailID);
+            end)
+        end
+    end)
+
 end
 
 function ForeverTBDMixin:OnTabSelected(tab)
@@ -363,12 +613,14 @@ function ForeverTBDMixin:OnHide()
 end
 
 function ForeverTBDMixin:SavedVars_OnInitialized()
-    
+
     if DevTool.AddData then
         DevTool:AddData(ForeverTBDAccount, addonName)
+        DevTool:AddData(ForeverTBDCharacter, addonName.."Character")
     end
 
     self:CreateMinimapButton();
+    self:CreateOptions();
 
     local unit = "player";
 
@@ -379,8 +631,10 @@ function ForeverTBDMixin:SavedVars_OnInitialized()
         return character.name == name;
     end)
 
+    local isNew = false;
     if (ActiveCharacter == nil) then
         ActiveCharacter = SavedVars:NewCharacter();
+        isNew = true;
     end
 
     ActiveCharacter:SetName(name);
@@ -402,6 +656,9 @@ function ForeverTBDMixin:SavedVars_OnInitialized()
     local home = GetBindLocation();
     ActiveCharacter:SetHome(home);
 
+    local isResting = IsResting();
+    ActiveCharacter:SetResting(isResting);
+
     UpdateLocation();
     UpdateXP();
     UpdateMoney();
@@ -416,25 +673,37 @@ function ForeverTBDMixin:SavedVars_OnInitialized()
         end
     end
 
-    self:LoadCharacterSummaryList();
+    if isNew == true then
+        addon.CallbackRegistry:TriggerEvent(addon.Callbacks.SavedVars_OnDataChanged);
+    end
 end
 
 function ForeverTBDMixin:SavedVars_OnDataChanged()
-    self:LoadCharacterSummaryList();
+    
 end
 
 function ForeverTBDMixin:PLAYER_ENTERING_WORLD(...)
     local isInitial, isReload = ...;
     
     if (isInitial or isReload) then
-        SavedVars:Init();
+        SavedVars:Init(); --force reset for sv updates
     end
 
     if (isInitial == true) and (ActiveCharacter ~= nil) then
         local loginTime = time();
         ActiveCharacter:SetLoginTime(loginTime);
     end
+end
 
+
+function ForeverTBDMixin:PLAYER_INTERACTION_MANAGER_FRAME_SHOW(...)
+    local id = ...;
+    if (id == 5) and (MerchantSellAllJunkButton:IsVisible()) then
+        local shouldVendorJunk = SavedVars:GetConfig("autoVendorJunk");
+        if (shouldVendorJunk.value == true) then
+            C_MerchantFrame.SellAllJunkItems();
+        end
+    end
 end
 
 
@@ -485,6 +754,13 @@ function ForeverTBDMixin:ZONE_CHANGED_NEW_AREA()
     UpdateLocation();
 end
 
+function ForeverTBDMixin:PLAYER_UPDATE_RESTING()
+    if ActiveCharacter then
+        local isResting = IsResting();
+        ActiveCharacter:SetResting(isResting);
+    end
+end
+
 function ForeverTBDMixin:ZONE_CHANGED()
     UpdateLocation();
 end
@@ -520,195 +796,86 @@ function ForeverTBDMixin:TRADE_SKILL_DATA_SOURCE_CHANGED()
 end
 
 
-function ForeverTBDMixin:ADDON_LOADED(...)
-    -- local addon = ...;
-    -- if (addon == "Blizzard_Professions") then
-    --     local lastCall = 0;
-    --     hooksecurefunc(ProfessionsFrame.CraftingPage.RecipeList.ScrollBox, "SetDataProvider", function()
-            
-    --     end)
-    -- end
-end
-
-function ForeverTBDMixin:SetupCharacterSummary()
-
-    --[[
-        Setup the main listbox
-        uses the 'ForeverTBDCharacterSummaryTemplate' template
-    ]]
-    local characterSummaryView = CreateScrollBoxListLinearView();
-    characterSummaryView:SetElementExtent(70);
-    characterSummaryView:SetElementResetter(function(frame)
-        frame:ClearCharacter();
-    end)
-    characterSummaryView:SetElementInitializer("ForeverTBDCharacterSummaryTemplate", function(frame, data)
-        frame:Init(data);
-    end)
-    ScrollUtil.InitScrollBoxListWithScrollBar(self.CharacterSummary.ScrollBox, self.CharacterSummary.ScrollBar, characterSummaryView);
-
-    --[[
-        Create the class filter menu button
-    ]]
-    self.CharacterSummary.DropdownButtonClass.OpenMenu:SetScript("OnClick", function()
-        local menu = MenuUtil.CreateContextMenu(self.CharacterSummary.DropdownButtonClass, function(owner, rootDescription)
-            rootDescription:CreateTitle(FILTER);
-            rootDescription:CreateButton(ALL, function()
-                self.CharacterSummary.DropdownButtonClass.Text:SetText(CLASS);
-                self:LoadCharacterSummaryList({
-                    key = "classID",
-                    func = nil;
-                })
-            end)
-            rootDescription:CreateDivider();
-
-            for i = 1, 12 do
-                    local class, _, classID = GetClassInfo(i);
-                if (class and classID) then
-                    rootDescription:CreateButton(class, function()
-                        self.CharacterSummary.DropdownButtonClass.Text:SetText(class);
-                        local filter = function(character)
-                            return character:GetClassID() == classID;
-                        end
-                        self:LoadCharacterSummaryList({
-                            key = "classID",
-                            func = filter,
-                        });
-                    end)
-                end
-            end
-        end)
-
-        menu:ClearAllPoints();
-        menu:SetPoint("TOPLEFT", self.CharacterSummary.DropdownButtonClass, "BOTTOMLEFT", 3, 0);
-    end)
-
-    --[[
-        Create the profession filter menu button
-    ]]
-    local professions = {
-        171,
-        164,
-        333,
-        202,
-        165,
-        197,
-        185,
-        356,
-        129,
-        182,
-        186,
-        393,
-    }
-    self.CharacterSummary.DropdownButtonProfession.OpenMenu:SetScript("OnClick", function()
-        local menu = MenuUtil.CreateContextMenu(self.CharacterSummary.DropdownButtonProfession, function(owner, rootDescription)
-            rootDescription:CreateTitle(FILTER);
-            rootDescription:CreateButton(ALL, function()
-                self.CharacterSummary.DropdownButtonProfession.Text:SetText(PROFESSIONS_BUTTON);
-                self:LoadCharacterSummaryList({
-                    key = "profession",
-                    func = nil;
-                })
-            end)
-            rootDescription:CreateDivider();
-                for _, id in ipairs(professions) do
-                local profName = C_TradeSkillUI.GetTradeSkillDisplayName(id)
-                rootDescription:CreateButton(profName, function()
-                    self.CharacterSummary.DropdownButtonProfession.Text:SetText(profName);
-                    local filter = function(character)
-                        local prof1 = character:GetProfession("prof1");
-                        local prof2 = character:GetProfession("prof2");
-                        if prof1 and (prof1[7] == id) then
-                            return true;
-                        end
-                        if prof2 and (prof2[7] == id) then
-                            return true;
-                        end
-                        
-                        --for these we just need to know if it exists and has skillLevel
-                        if (id == 185) then
-                            local cooking = character:GetProfession("cooking");
-                            if cooking and cooking[3] and (cooking[3] > 0) then
-                                return true;
-                            end
-                        end
-                        if (id == 129) then
-                            local firstAid = character:GetProfession("firstAid");
-                            if firstAid and firstAid[3] and (firstAid[3] > 0) then
-                                return true;
-                            end
-                        end
-                        if (id == 356) then
-                            local fishing = character:GetProfession("fishing");
-                            if fishing and fishing[3] and (fishing[3] > 0) then
-                                return true;
-                            end
-                        end
-                    end
-                    self:LoadCharacterSummaryList({
-                        key = "profession",
-                        func = filter,
-                    });
-                end)
-            end
-        end)
-
-        menu:ClearAllPoints();
-        menu:SetPoint("TOPLEFT", self.CharacterSummary.DropdownButtonProfession, "BOTTOMLEFT", 3, 0);
-    end)
-
-    self.characterSummaryFilters = {};
-end
 
 
----Loads Characters into the summary using set filters, if none it loads all characters
----@param filter table? { key=filterKey, func=function, } the filterKey is used to manage adding/updating/removing the filter, the func is passed the Character and should return true for valid matches
-function ForeverTBDMixin:LoadCharacterSummaryList(filter)
 
-    if (filter) then
-        self.characterSummaryFilters[filter.key] = filter.func;
-    end
 
-    local dataProvider = CreateDataProvider();
 
-    if next(self.characterSummaryFilters) ~= nil then
-        for _, character in ipairs(addon.Characters) do
-            local isMatch = true;
-            for k, filter in pairs(self.characterSummaryFilters) do
-                if filter(character) ~= true then
-                    isMatch = false;
-                end
-            end
-            if (isMatch == true) then
-                dataProvider:Insert(character);
-            end
-        end
-    else
-        for _, character in ipairs(addon.Characters) do
-            dataProvider:Insert(character);
-        end
-    end
 
-    self.CharacterSummary.ScrollBox:SetDataProvider(dataProvider);
-end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--all this needs to move into a profession mixin and template structure
 
 function ForeverTBDMixin:SetupProfessions()
+
+    local function GetSortedKeys(t)
+        if (t == nil) then
+            return {}
+        end
+        local t1 = {};
+        for k, v in pairs(t) do
+            table.insert(t1, k);
+        end
+        table.sort(t1, function(a, b)
+            return a < b;
+        end)
+        return t1;
+    end
+
     local function OnProfessionSearch(searchTerm)
         self.Professions.SchematicForm.Background:SetAtlas("Professions-Recipe-Background")
         local dataProvider = CreateTreeDataProvider();
-        for _, character in ipairs(addon.Characters) do
-            local recipesFound = character:SearchRecipes(searchTerm);
-            if (#recipesFound > 0) then
-                local name = character:GetName();
-                local characterNode = dataProvider:Insert({
-                    name = name,
-                    isCharacter = true,
-                });
-                for _, recipe in ipairs(recipesFound) do
-                    characterNode:Insert(recipe);
+        local characterNodes = {};
+        local professionNodes = {};
+        local matchingRecipes = SavedVars:FindRecipeByName(searchTerm, true);
+        if #matchingRecipes > 0 then
+            for _, character in ipairs(addon.Characters) do
+                professionNodes = {};
+                for _, recipeID in ipairs(matchingRecipes) do
+                    if character:HasRecipe(recipeID) then
+                        if characterNodes[character:GetName()] == nil then
+                            local characterName = character:GetName("colourized");
+                            characterNodes[character:GetName()] = dataProvider:Insert({
+                                name = characterName,
+                                isHeader = true,
+                            })
+                        end
+                        --characterNode:Insert(recipeID);
+                        local recipeProfessionID = SavedVars:GetRecipeProfessionID(recipeID)
+                        local professionName = C_TradeSkillUI.GetTradeSkillDisplayName(recipeProfessionID);
+                        if professionNodes[professionName] == nil then
+                            professionNodes[professionName] = characterNodes[character:GetName()]:Insert({
+                                isHeader = true,
+                                name = professionName,
+                            })
+                        end
+                        professionNodes[professionName]:Insert(recipeID);
+                    end
                 end
             end
         end
+
         self.Professions.CharacterTreeScrollBox:SetDataProvider(dataProvider)
     end
 
@@ -730,7 +897,7 @@ function ForeverTBDMixin:SetupProfessions()
     local elementSpacing = 3;
     local characterTree = CreateScrollBoxListTreeListView(indent, padding, padding, padding, padding, elementSpacing);
 
-    local function InitCharacterButton(button, elementData)
+    local function InitHeaderButton(button, elementData)
         button.treeNode = elementData;
         button.elementData = elementData:GetData();
         button.Name:SetText(button.elementData.name)
@@ -738,21 +905,31 @@ function ForeverTBDMixin:SetupProfessions()
     end
 
     local function InitRecipeButton(button, elementData)
-        button.elementData = elementData:GetData();
-        button.Content.Name:SetText(button.elementData.name)
+        button.recipeID = elementData:GetData();
+        button.recipeData = SavedVars:FindRecipeByID(button.recipeID)
+
+        if button.recipeData == nil then
+            button.Content.Name:SetText("No data");
+            button:SetScript("OnClick", nil);
+            return;
+        end
+        button.Content.Name:SetText(button.recipeData.name)
 
         --since this is borrowed from blizz i need to adjust the anchors
         button.Content.Name:SetPoint("RIGHT", button.Content, "RIGHT", -4, 0)
 
         button:SetScript("OnClick", function()
-            self.Professions.SchematicForm:LoadRecipe(button.elementData)
+            self.Professions.SchematicForm:LoadRecipe(button.recipeID, button.recipeData)
         end)
     end
 
     characterTree:SetElementFactory(function(factory, treeNode)
         local elementData = treeNode:GetData();
-        if elementData.isCharacter then
-            factory("StatisticsHeaderTemplate", InitCharacterButton);
+
+        --this works for now but maybe could be neater
+        --the treeview dp is getting either a recipeID or a characterName
+        if (type(elementData) == "table") and elementData.isHeader then
+            factory("StatisticsHeaderTemplate", InitHeaderButton);
         else
             factory("StatisticsEntryTemplate", InitRecipeButton)
         end
@@ -777,25 +954,42 @@ function ForeverTBDMixin:SetupProfessions()
     local function OnProfessionSelected(profID)
         self.Professions.SchematicForm.Background:SetAtlas(professionsBackgrounds[profID])
         local dataProvider = CreateTreeDataProvider();
+
+
         local characters = self:GetCharactersForProfession(profID)
         if (#characters > 0) then
             for _, character in ipairs(characters) do
-                local name = character:GetName();
+                local characterName = character:GetName("colourized");
                 local characterNode = dataProvider:Insert({
-                    name = name,
-                    isCharacter = true,
+                    name = characterName,
+                    isHeader = true,
                 });
-                local key = character:GetProfessionKey(profID)
-                if key then
-                    local recipes = character:GetProfessionRecipes(key);
-                    if recipes then
-                        for _, recipe in ipairs(recipes) do
-                            characterNode:Insert(recipe);
-                        end
+                -- local key = character:GetProfessionKey(profID)
+                -- if key then
+                --     local recipeIDs = character:GetProfessionRecipeIDs(key); --re work this to extract from SavedVars
+                --     if recipeIDs then
+                --         for _, recipeID in ipairs(recipeIDs) do
+                --             characterNode:Insert(recipeID);
+                --         end
+                --     end
+                -- end
+
+                local professionData = SavedVars:GetProfessionCategories(profID);
+                local profDataSorted = GetSortedKeys(professionData);
+                for _, categoryID in ipairs(profDataSorted) do
+                    local categoryNode = characterNode:Insert({
+                        name = professionData[categoryID].name,
+                        isHeader = true,
+                    })
+
+                    local recipesSorted = GetSortedKeys(professionData[categoryID].recipes);
+                    for _, recipeID in ipairs(recipesSorted) do
+                        categoryNode:Insert(recipeID);
                     end
                 end
             end
         end
+
         self.Professions.CharacterTreeScrollBox:SetDataProvider(dataProvider)
     end
 
@@ -830,14 +1024,34 @@ function ForeverTBDMixin:SetupProfessions()
     end)
 end
 
-local RecipeListHooked = false;
 function ForeverTBDMixin:ScanRecipes(professionID)
 
+    --must have an ID
     if (professionID == nil) then
         return;
     end
 
+    --check its a valid number
     professionID = tonumber(professionID);
+    if type(professionID) ~= "number" then
+        return;
+    end
+
+    --dont scan for the same recipe (the DataProvider can get set multiple times in one showing)
+    if self.lastProfessionID == professionID then
+        return;
+    end
+
+    self.lastProfessionID = professionID;
+
+    --print("ScanRecipes", time())
+
+    --[[
+        Changing the storage of prof recipe data,
+        the character object will now only contain recipeIDs
+
+        recipeData will be saved seperately to reduce duplication
+    ]]
 
     local hasUpdated = false;
 
@@ -857,30 +1071,65 @@ function ForeverTBDMixin:ScanRecipes(professionID)
     end
 
     if (ProfessionsFrame.CraftingPage.RecipeList.ScrollBox:HasDataProvider() == true) then
-        local recipes = {}
+        local recipeIDs = {};
+        local categories = {};
         for k, element in ProfessionsFrame.CraftingPage.RecipeList.ScrollBox:GetDataProvider():EnumerateEntireRange() do
-            if element.data and element.data.recipeInfo then
-                local capture = {}
-                capture.recipeID = element.data.recipeInfo.recipeID
-                capture.name = element.data.recipeInfo.name
-                --capture.categoryID = element.data.recipeInfo.categoryID
-                capture.hyperlink = element.data.recipeInfo.hyperlink
-                capture.icon = element.data.recipeInfo.icon
-                --capture.learned = element.data.recipeInfo.learned
-                capture.maxTrivialLevel = element.data.recipeInfo.maxTrivialLevel
-                --capture.relativeDifficulty = element.data.recipeInfo.relativeDifficulty
-                table.insert(recipes, capture)
+
+            --this is the category header which it seems also has a table of recipes!
+            if element.data and element.data.categoryInfo then
+                --DevTools_Dump({element.data.categoryInfo});
+
+                --print("processing", element.data.categoryInfo.name, element.data.categoryInfo.categoryID, element.data.categoryInfo.skillLineID)
+
+                categories[element.data.categoryInfo.categoryID] = {
+                    --categoryID = element.data.categoryInfo.categoryID,
+                    skillLineID = element.data.categoryInfo.skillLineID,
+                    parentCategoryID = element.data.categoryInfo.parentCategoryID,
+                    name = element.data.categoryInfo.name,
+                    recipes = {},
+                }
+
+                if element.data.categoryInfo.recipes then
+                    for _, recipe in ipairs(element.data.categoryInfo.recipes) do
+                        categories[element.data.categoryInfo.categoryID].recipes[recipe.recipeID] = {
+                            icon = recipe.icon,
+                            name = recipe.name,
+                            hyperlink = recipe.hyperlink,
+                            maxTrivialLevel = recipe.maxTrivialLevel
+                        }
+                        --print(">>> added recipe", recipe.name)
+                        table.insert(recipeIDs, recipe.recipeID); --this goes to the character object
+                    end
+                end
             end
+            -- if element.data and element.data.recipeInfo then
+            --     local capture = {}
+            --     --capture.recipeID = element.data.recipeInfo.recipeID
+            --     capture.name = element.data.recipeInfo.name
+            --     capture.categoryID = element.data.recipeInfo.categoryID
+            --     capture.hyperlink = element.data.recipeInfo.hyperlink
+            --     capture.icon = element.data.recipeInfo.icon
+            --     --capture.learned = element.data.recipeInfo.learned
+            --     capture.maxTrivialLevel = element.data.recipeInfo.maxTrivialLevel
+            --     --capture.relativeDifficulty = element.data.recipeInfo.relativeDifficulty
+
+
+            --     table.insert(recipeIDs, element.data.recipeInfo.recipeID);
+            --     table.insert(recipeData, capture);
+            -- end
         end
 
-        ScanAndSetCharacterRecipes(recipes);
+        --SavedVars:UpdateProfessionRecipes(recipeIDs, recipeData)
+        SavedVars:UpdateProfessionRecipes(professionID, categories)
+        ScanAndSetCharacterRecipes(recipeIDs);
 
         if (hasUpdated == false) then
             UpdateProfessions();
-            ScanAndSetCharacterRecipes(recipes);
+            ScanAndSetCharacterRecipes(recipeIDs);
         end
 
-        recipes = nil;
+        --recipeIDs = nil;
+        --recipeData = nil;
         --collectgarbage();
     end
 

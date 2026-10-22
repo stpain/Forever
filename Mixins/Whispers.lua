@@ -55,7 +55,7 @@ end
 
 
 
-
+--UI-HUD-Minimap-Mail-New-Flipbook
 
 
 
@@ -68,28 +68,39 @@ function ForeverTBDWhisperMessageMixin:OnLoad()
 end
 
 function ForeverTBDWhisperMessageMixin:SetMessage(message)
-    self.Bubble.MessageText:SetText(message.messageText);
 
-    self.Bubble.TimeStamp:SetText(date("%H:%M", message.timeStamp));
-
-    self.Bubble.AltName:Hide();
-
-    if (message.sender == ThisCharacter) then
-        self.Bubble:ClearAllPoints();
-        self.Bubble:SetPoint("TOPRIGHT", -5, -5);
-        self.Bubble:SetPoint("BOTTOMRIGHT", -5, 5);
-
-    elseif (MyCharacters[message.sender] ~= nil) then
-        self.Bubble:ClearAllPoints();
-        self.Bubble:SetPoint("TOPRIGHT", -5, -17);
-        self.Bubble:SetPoint("BOTTOMRIGHT", -5, 5);
-        self.Bubble.AltName:SetText(MyCharacters[message.sender]);
-        self.Bubble.AltName:Show();
+    if (message.isDateDivider) then
+        self.Bubble:Hide();
+        self.DateDividerText:Show();
+        self.DateDividerText:SetText(date("%A %d-%m-%Y", message.timeStamp))
     else
-        self.Bubble:ClearAllPoints();
-        self.Bubble:SetPoint("TOPLEFT", 5, -5);
-        self.Bubble:SetPoint("BOTTOMLEFT", 5, 5);
+        self.DateDividerText:Hide();
+        self.Bubble:Show();
+
+        self.Bubble.MessageText:SetText(message.messageText);
+
+        self.Bubble.TimeStamp:SetText(date("%H:%M", message.timeStamp));
+
+        self.Bubble.AltName:Hide();
+
+        if (message.sender == ThisCharacter) then
+            self.Bubble:ClearAllPoints();
+            self.Bubble:SetPoint("TOPRIGHT", -5, -5);
+            self.Bubble:SetPoint("BOTTOMRIGHT", -5, 5);
+
+        elseif (MyCharacters[message.sender] ~= nil) then
+            self.Bubble:ClearAllPoints();
+            self.Bubble:SetPoint("TOPRIGHT", -5, -17);
+            self.Bubble:SetPoint("BOTTOMRIGHT", -5, 5);
+            self.Bubble.AltName:SetText(MyCharacters[message.sender]);
+            self.Bubble.AltName:Show();
+        else
+            self.Bubble:ClearAllPoints();
+            self.Bubble:SetPoint("TOPLEFT", 5, -5);
+            self.Bubble:SetPoint("BOTTOMLEFT", 5, 5);
+        end
     end
+
 end
 
 
@@ -163,6 +174,11 @@ function ForeverTBDWhispersMixin:OnLoad()
     local bubblePadding = 40;
     local messageHistory = CreateScrollBoxListLinearView();
     messageHistory:SetElementExtentCalculator(function(dataIndex, elementData)
+
+        if (elementData.isDateDivider == true) then
+            return 18;
+        end
+
         FontStringHeightChecker:SetText(elementData.messageText);
         local height = FontStringHeightChecker:GetStringHeight();
 
@@ -276,8 +292,34 @@ function ForeverTBDWhispersMixin:LoadChatHistory(playerName)
     self.ChatHistoryRecipientName:SetText(playerName or "");
     if self.whispers then
         local t = {};
+        local dateTable;
         for _, whisper in ipairs(self.whispers) do
             if (whisper.sender == playerName) or (whisper.recipient == playerName) then
+                if dateTable == nil then
+                    dateTable = date("*t", whisper.timeStamp);
+                    table.insert(t, {
+                        isDateDivider = true,
+                        timeStamp = whisper.timeStamp
+                    })
+                else
+                    local dt = date("*t", whisper.timeStamp);
+                    --print(dateTable.year, dt.year, dateTable.yday, dt.yday)
+                    if dt.year == dateTable.year then
+                        if dt.yday > dateTable.yday then
+                            table.insert(t, {
+                                isDateDivider = true,
+                                timeStamp = whisper.timeStamp
+                            })
+                            dateTable = date("*t", whisper.timeStamp);
+                        end
+                    elseif (dt.year > dateTable.year) then
+                        table.insert(t, {
+                            isDateDivider = true,
+                            timeStamp = whisper.timeStamp
+                        })
+                        dateTable = date("*t", whisper.timeStamp);
+                    end
+                end
                 table.insert(t, whisper);
             end
         end
@@ -299,6 +341,8 @@ function ForeverTBDWhispersMixin:RefreshCharacterList()
     if self.whispers then
         for _, whisper in ipairs(self.whispers) do
 
+            --print(whisper.sender, whisper.recipient)
+
             --handle the inbound messages using the .sender field
             if (playersSeen[whisper.sender] == nil) and (whisper.sender ~= ThisCharacter) and (MyCharacters[whisper.sender] == nil) then
                 DataProvider:Insert({
@@ -311,21 +355,21 @@ function ForeverTBDWhispersMixin:RefreshCharacterList()
                 playersSeen[whisper.sender] = true;
             end
 
-            --for instances where we send a message before receiving one we need to reverse        
-            -- if (whisper.sender == ThisCharacter) and (whisper.recipient ~= ThisCharacter) then
+            --for instances where we send a message before receiving one
+            if ((whisper.sender == ThisCharacter) or (MyCharacters[whisper.sender] ~= nil)) and (whisper.recipient ~= ThisCharacter) then
 
-            --     --check we haven't loaded this chat already from a message received
-            --     if (playersSeen[whisper.recipient] == nil) then
-            --         DataProvider:Insert({
-            --             name = whisper.recipient,
-            --             class = whisper.playerClass,
-            --             onClick = function()
-            --                 self:LoadChatHistory(whisper.recipient);
-            --             end,
-            --         });
-            --         playersSeen[whisper.recipient] = true;
-            --     end
-            -- end
+                --check we haven't loaded this chat already from a message received
+                if (playersSeen[whisper.recipient] == nil) then
+                    DataProvider:Insert({
+                        name = whisper.recipient,
+                        class = whisper.playerClass,
+                        onClick = function()
+                            self:LoadChatHistory(whisper.recipient);
+                        end,
+                    });
+                    playersSeen[whisper.recipient] = true;
+                end
+            end
 
 
         end

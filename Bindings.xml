@@ -1,0 +1,6 @@
+<Bindings>
+    <Binding name="CLICK MultiCastActionButton1:LeftButton" category="Totem Bar (Multicast Bar)"/>
+    <Binding name="CLICK MultiCastActionButton2:LeftButton" category="Totem Bar (Multicast Bar)"/>
+    <Binding name="CLICK MultiCastActionButton3:LeftButton" category="Totem Bar (Multicast Bar)"/>
+    <Binding name="CLICK MultiCastActionButton4:LeftButton" category="Totem Bar (Multicast Bar)"/>
+</Bindings>

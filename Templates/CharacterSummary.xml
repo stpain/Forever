@@ -1,7 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/AddOns/Blizzard_SharedXML/UI.xsd">
 
-    <Button name="ForeverTBDCharacterSummaryTemplate" mixin="ForeverTBDCharacterSummaryMixin" registerForClicks="AnyUp,AnyDown" virtual="true">
+    <Button name="ForeverTBDCharacterSummaryTemplate" mixin="ForeverTBDCharacterSummaryCharacterMixin" registerForClicks="AnyUp,AnyDown" virtual="true">
         <Size x="980" y="70"/>
         <Layers>
             <Layer level="BACKGROUND">
@@ -41,6 +41,22 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
                     </Anchors>
                 </Texture>
             </Layer>
+            <Layer level="ARTWORK" textureSubLevel="3">
+                <Texture parentKey="FactionIconPortrait" atlas="UI-HUD-UnitFrame-SmallCircle">
+                    <Size x="32" y="32"/>
+                    <Anchors>
+                        <Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" relativeKey="$parent.RaceIcon" x="12" y="-8"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="ARTWORK" textureSubLevel="4">
+                <Texture parentKey="FactionIcon">
+                    <Size x="20" y="20"/>
+                    <Anchors>
+                        <Anchor point="CENTER" relativePoint="CENTER" relativeKey="$parent.FactionIconPortrait"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
             <Layer level="OVERLAY">
                 <FontString parentKey="Name" inherits="GameFontNormalLarge" justifyH="LEFT">
                     <Size x="214" y="20"/>
@@ -76,6 +92,27 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
         </Layers>
 
         <Frames>
+            <Frame parentKey="PlayerRestLoop" alpha="1" hidden="true" frameStrata="HIGH">
+                <Size x="20" y="20"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="50" y="-7"/>
+                </Anchors>
+                <Layers>
+                    <Layer level="ARTWORK">
+                        <Texture parentKey="RestTexture" alpha="1" alphaMode="BLEND" atlas="UI-HUD-UnitFrame-Player-Rest-Flipbook">
+                            <Size x="30" y="30"/>
+                            <Anchors>
+                                <Anchor point="CENTER"/>
+                            </Anchors>
+                        </Texture>
+                    </Layer>
+                </Layers>
+                <Animations>
+                    <AnimationGroup parentKey="PlayerRestLoopAnim" looping="REPEAT" setToFinalAlpha="true">
+                        <FlipBook smoothing="NONE" childKey="RestTexture" duration="1.5" order="1" flipBookRows="7" flipBookColumns="6" flipBookFrames="42" flipBookFrameWidth="0" flipBookFrameHeight="0"/>
+                    </AnimationGroup>
+                </Animations>
+            </Frame>
             <StatusBar parentKey="XP" inherits="TooltipProgressBarTemplate">
                 <Anchors>
                     <Anchor point="BOTTOMLEFT" x="80" y="5"/>
@@ -149,5 +186,55 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
             <OnClick method="OnClick"/>
         </Scripts>
     </Button>
+
+
+    <Frame name="ForeverTBDCharacterSummary" mixin="ForeverTBDCharacterSummaryMixin" virtual="true">
+        <Frames>
+            <Button parentKey="DropdownButtonFaction" inherits="ForeverTBDDropdownButtonTemplate">
+                <KeyValues>
+                    <KeyValue key="defaultText" value="FACTION" type="global"/>
+                </KeyValues>
+                <Size x="130" y="28"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="10" y="-6"/>
+                </Anchors>
+            </Button>
+            <Button parentKey="DropdownButtonClass" inherits="ForeverTBDDropdownButtonTemplate">
+                <KeyValues>
+                    <KeyValue key="defaultText" value="CLASS" type="global"/>
+                </KeyValues>
+                <Size x="130" y="28"/>
+                <Anchors>
+                    <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.DropdownButtonFaction" x="10" y="0"/>
+                </Anchors>
+            </Button>
+            <Button parentKey="DropdownButtonProfession" inherits="ForeverTBDDropdownButtonTemplate">
+                <KeyValues>
+                    <KeyValue key="defaultText" value="PROFESSIONS_BUTTON" type="global"/>
+                </KeyValues>
+                <Size x="140" y="28"/>
+                <Anchors>
+                    <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.DropdownButtonClass" x="10" y="0"/>
+                </Anchors>
+            </Button>
+
+            <Frame parentKey="ScrollBox" inherits="WowScrollBoxList" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-35"/>
+                    <Anchor point="BOTTOMRIGHT" x="-25" y="5"/>
+                </Anchors>
+            </Frame>
+
+            <EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.ScrollBox" relativePoint="TOPRIGHT" x="5" y="-5"/>
+                    <Anchor point="BOTTOMLEFT" relativeKey="$parent.ScrollBox" relativePoint="BOTTOMRIGHT" x="5" y="5"/>
+                </Anchors>
+            </EventFrame>
+        </Frames>
+        <Scripts>
+            <OnLoad method="OnLoad"/>
+        </Scripts>
+    </Frame>
 
 </Ui>

@@ -7,6 +7,49 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
         </Scripts>
     </Frame>
 
+    <Frame name="ForeverTBDOptionsListTemplate" virtual="true">
+        <Size x="280" y="26"/>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture parentKey="HoverBackground" inherits="HoverBackgroundTemplate">
+                    <Anchors>
+                        <Anchor point="TOPLEFT"/>
+                        <Anchor point="BOTTOMRIGHT"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="ARTWORK">
+
+            </Layer>
+            <Layer level="OVERLAY">
+                <FontString parentKey="Text" inherits="GameFontNormal" justifyH="LEFT" wordwrap="false">
+                    <Anchors>
+                        <Anchor point="LEFT" x="37" y="0"/>
+                        <Anchor point="RIGHT" relativePoint="CENTER" x="-85" y="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Frames>
+			<Frame parentKey="NewFeature" inherits="NewFeatureLabelTemplate" frameStrata="HIGH" scale=".8" frameLevel="100" hidden="true">
+				<Size x="1" y="1"/>
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT" x="16" y="-10" relativeKey="$parent.Text" relativePoint="LEFT"/>
+				</Anchors>
+			</Frame>
+        </Frames>
+    </Frame>
+
+    <Frame name="ForeverTBDOptionsListCheckboxTemplate" inherits="ForeverTBDOptionsListTemplate" virtual="true">
+        <Frames>
+            <CheckButton parentKey="CheckBox" inherits="SettingsCheckboxTemplate">
+                <Anchors>
+                    <Anchor point="LEFT" relativePoint="CENTER" x="-30" y="0"/>
+                </Anchors>
+            </CheckButton>
+        </Frames>
+    </Frame>
+
 
     <Frame name="ForeverTBDUI" inherits="PortraitFrameTemplate" mixin="ForeverTBDMixin" parent="UIParent" movable="true">
 
@@ -62,7 +105,7 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
 			<Frame parentKey="Tab1" inherits="ForeverTBDSideTabTemplate" parentArray="Tabs" id="1">
 				<KeyValues>
 					<KeyValue key="tooltipText" value="CHARACTER" type="global"/>
-					<KeyValue key="iconAtlas" value="gamepad-radial-icon-group-up" type="string"/>
+					<KeyValue key="iconAtlas" value="gamepad-radial-icon-character" type="string"/>
 				</KeyValues>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" y="-60"/>
@@ -86,6 +129,25 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
 					<Anchor point="TOPLEFT" relativeKey="$parent.Tab2" relativePoint="BOTTOMLEFT" y="-2"/>
 				</Anchors>
 			</Frame>
+			<Frame parentKey="Tab4" inherits="ForeverTBDSideTabTemplate" parentArray="Tabs" id="4">
+				<KeyValues>
+					<KeyValue key="tooltipText" value="PROFESSIONS_JOURNAL_TAB_NAME" type="global"/>
+					<KeyValue key="iconAtlas" value="gamepad-radial-icon-questlog-up" type="string"/>
+					<!-- <KeyValue key="iconAtlas" value="gamepad-radial-icon-quests" type="string"/> -->
+				</KeyValues>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.Tab3" relativePoint="BOTTOMLEFT" y="-2"/>
+				</Anchors>
+			</Frame>
+			<!-- <Frame parentKey="Tab5" inherits="ForeverTBDSideTabTemplate" parentArray="Tabs" id="5" hidden="true">
+				<KeyValues>
+					<KeyValue key="tooltipText" value="Interactions" type="string"/>
+					<KeyValue key="iconAtlas" value="gamepad-radial-icon-emotes-up" type="string"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.Tab4" relativePoint="BOTTOMLEFT" y="-2"/>
+				</Anchors>
+			</Frame> -->
 
             <Frame parentKey="InsetBorder" inherits="InsetFrameTemplate3" useParentLevel="true">
                 <Anchors>
@@ -102,44 +164,17 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                 <Frames>
                     <Button parentKey="RESET_EVERYTHING" inherits="UIPanelButtonTemplate" text="RESET">
                         <Anchors>
-                            <Anchor point="CENTER"/>
+                            <Anchor point="BOTTOM" x="0" y="20"/>
                         </Anchors>
                         <Size x="200" y="24"/>
                     </Button>
-                </Frames>
-            </Frame>
-
-            <Frame parentKey="CharacterSummary" parentArray="Views" id="1">
-                <Anchors>
-                    <Anchor point="TOPLEFT" x="5" y="-60"/>
-                    <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
-                </Anchors>
-                <Frames>
-
-                    <Button parentKey="DropdownButtonClass" inherits="ForeverTBDDropdownButtonTemplate">
-                        <KeyValues>
-                            <KeyValue key="defaultText" value="CLASS" type="global"/>
-                        </KeyValues>
-                        <Size x="130" y="28"/>
-                        <Anchors>
-                            <Anchor point="TOPLEFT" x="10" y="-6"/>
-                        </Anchors>
-                    </Button>
-                    <Button parentKey="DropdownButtonProfession" inherits="ForeverTBDDropdownButtonTemplate">
-                        <KeyValues>
-                            <KeyValue key="defaultText" value="PROFESSIONS_BUTTON" type="global"/>
-                        </KeyValues>
-                        <Size x="140" y="28"/>
-                        <Anchors>
-                            <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.DropdownButtonClass" x="10" y="0"/>
-                        </Anchors>
-                    </Button>
-
-					<Frame parentKey="ScrollBox" inherits="WowScrollBoxList" frameStrata="HIGH">
+					<Frame parentKey="ScrollBox" inherits="WowScrollBoxList">
 						<Anchors>
-							<Anchor point="TOPLEFT" x="5" y="-35"/>
-							<Anchor point="BOTTOMRIGHT" x="-25" y="5"/>
+							<Anchor point="TOPLEFT" x="200" y="-62"/>
+							<Anchor point="BOTTOMLEFT" x="200" y="55"/>
+							<Anchor point="RIGHT" x="-30" y="0"/>
 						</Anchors>
+                        <Size x="500"/>
 					</Frame>
 
 					<EventFrame parentKey="ScrollBar" inherits="MinimalScrollBar" frameStrata="HIGH">
@@ -149,6 +184,13 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
 						</Anchors>
 					</EventFrame>
                 </Frames>
+            </Frame>
+
+            <Frame parentKey="CharacterSummary" inherits="ForeverTBDCharacterSummary" parentArray="Views" id="1">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-60"/>
+                    <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
+                </Anchors>
             </Frame>
 
             <Frame parentKey="Professions" parentArray="Views" id="2" hidden="true">
@@ -216,11 +258,25 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
 
             <Frame parentKey="Whispers" inherits="ForeverTBDWhispers" parentArray="Views" id="3" hidden="true">
                 <Anchors>
-                    <Anchor point="TOPLEFT" x="5" y="-30"/>
+                    <Anchor point="TOPLEFT" x="5" y="-60"/>
                     <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
                 </Anchors>
-
             </Frame>
+
+            <Frame parentKey="Journal" inherits="ForeverTBDJournal" parentArray="Views" id="4" hidden="true">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-60"/>
+                    <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
+                </Anchors>
+            </Frame>
+
+            <!-- <Frame parentKey="Interactions" inherits="ForeverTBDInteractions" parentArray="Views" id="5" hidden="true">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-60"/>
+                    <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
+                </Anchors>
+            </Frame> -->
+
 
         </Frames>
 

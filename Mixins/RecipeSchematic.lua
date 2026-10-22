@@ -94,7 +94,7 @@ local Resetter = function(_, button)
 end
 
 local ReagentButtonPool = CreateFramePool("ItemButton", UIParent, "ForeverTBDReagentsButtonTemplate", Resetter);
-function ForeverTBDRecipeSchematicMixin:LoadRecipe(recipe)
+function ForeverTBDRecipeSchematicMixin:LoadRecipe(recipeID, recipeData)
 
     self.OutputIcon:Show();
     self.OutputText:Show();
@@ -104,12 +104,12 @@ function ForeverTBDRecipeSchematicMixin:LoadRecipe(recipe)
 
     --bit of a guess on this atm
     --local schematic = C_TradeSkillUI.GetRecipeSchematic(recipe.recipeID, false, recipe.maxTrivialLevel);
-    local schematic = ProfessionsUtil.GetRecipeSchematic(recipe.recipeID, false) --, recipe.maxTrivialLevel);
+    local schematic = ProfessionsUtil.GetRecipeSchematic(recipeID, false) --, recipe.maxTrivialLevel);
 
-    local item = Item:CreateFromItemLink(recipe.hyperlink);
+    local item = Item:CreateFromItemLink(recipeData.hyperlink);
     item:ContinueOnItemLoad(function()
         local quality = item:GetItemQuality();
-        self.OutputIcon:SetItemButtonQuality(quality, recipe.hyperlink);
+        self.OutputIcon:SetItemButtonQuality(quality, recipeData.hyperlink);
         self.OutputIcon.Icon:SetTexture(item:GetItemIcon());
         self.OutputText:SetText(item:GetItemName());
 
@@ -118,7 +118,7 @@ function ForeverTBDRecipeSchematicMixin:LoadRecipe(recipe)
         end)
 
         self.Tooltip:SetOwner(self, "ANCHOR_PRESERVE");
-        self.Tooltip:SetHyperlink(recipe.hyperlink);
+        self.Tooltip:SetHyperlink(recipeData.hyperlink);
         self.Tooltip:Show()
     end)
 
