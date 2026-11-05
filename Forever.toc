@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Author: TheBoringDad
-## Version: 0.11
+## Version: 0.2
 ## Title: Forever
 ## Notes: Forever, track your characters and more!
 ## SavedVariables: ForeverTBDAccount
