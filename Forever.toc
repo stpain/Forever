@@ -45,7 +45,7 @@ Mixins\CharacterSummary.lua
 Mixins\RecipeSchematic.lua
 Mixins\Whispers.lua
 Mixins\Journal.lua
-#Mixins\Interactions.lua
+Mixins\Interactions.lua
 
 Templates\DropdownButton.xml
 Templates\SearchBox.xml
@@ -54,7 +54,7 @@ Templates\CharacterSummary.xml
 Templates\RecipeSchematic.xml
 Templates\Whispers.xml
 Templates\Journal.xml
-#Templates\Interactions.xml
+Templates\Interactions.xml
 
 Forever.lua
 Forever.xml

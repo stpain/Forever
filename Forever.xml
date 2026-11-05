@@ -139,7 +139,7 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
 					<Anchor point="TOPLEFT" relativeKey="$parent.Tab3" relativePoint="BOTTOMLEFT" y="-2"/>
 				</Anchors>
 			</Frame>
-			<!-- <Frame parentKey="Tab5" inherits="ForeverTBDSideTabTemplate" parentArray="Tabs" id="5" hidden="true">
+			<Frame parentKey="Tab5" inherits="ForeverTBDSideTabTemplate" parentArray="Tabs" id="5" hidden="false">
 				<KeyValues>
 					<KeyValue key="tooltipText" value="Interactions" type="string"/>
 					<KeyValue key="iconAtlas" value="gamepad-radial-icon-emotes-up" type="string"/>
@@ -147,7 +147,7 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeKey="$parent.Tab4" relativePoint="BOTTOMLEFT" y="-2"/>
 				</Anchors>
-			</Frame> -->
+			</Frame>
 
             <Frame parentKey="InsetBorder" inherits="InsetFrameTemplate3" useParentLevel="true">
                 <Anchors>
@@ -270,12 +270,12 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                 </Anchors>
             </Frame>
 
-            <!-- <Frame parentKey="Interactions" inherits="ForeverTBDInteractions" parentArray="Views" id="5" hidden="true">
+            <Frame parentKey="Interactions" inherits="ForeverTBDInteractions" parentArray="Views" id="5" hidden="true">
                 <Anchors>
                     <Anchor point="TOPLEFT" x="5" y="-60"/>
                     <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
                 </Anchors>
-            </Frame> -->
+            </Frame>
 
 
         </Frames>

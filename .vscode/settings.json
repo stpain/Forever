@@ -107,7 +107,10 @@
         "LOOT_ITEM",
         "NOTE",
         "NOTE_COLON",
-        "GameTooltip_AddNormalLine"
+        "GameTooltip_AddNormalLine",
+        "MANA",
+        "OPENING",
+        "TooltipDataProcessor"
     ],
     "Lua.diagnostics.disable": [
         "assign-type-mismatch"

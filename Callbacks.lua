@@ -33,6 +33,13 @@ addon.SecondsFormatter:Init(1, 1, false, false)
 --move this later
 addon.Api = {}
 
+function addon.Api.OpenTo(tabID)
+    if ForeverTBDUI["Tab"..tabID] then
+        ForeverTBDUI:OnTabSelected(ForeverTBDUI["Tab" .. tabID]);
+        ForeverTBDUI:Show();
+    end
+end
+
 function addon.Api.GetLocation(formatCoords)
     local mapID = C_Map.GetBestMapForUnit("player");
     if (mapID) then

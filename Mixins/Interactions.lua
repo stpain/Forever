@@ -50,15 +50,11 @@ local RelationshipStandings = {
     { relationshipStanding = "Ignored", standingID = 1, },
 }
 
-local function GetRelationshipStanding(standingID)
-    for k, v in ipairs(RelationshipStandings) do
-        if v.standingID == standingID then
-            return v;
-        end
-    end
+local function GetRelationshipStandingText(interaction)
+    return StandingColours[interaction.standingID]:WrapTextInColorCode(addon.locales["interactionEnumRelationshipLevel_" .. interaction.standingID]);
 end
 
-local InteractionsManagerMixin = {};
+InteractionsManagerMixin = {};
 
 -- local events = {
 --     "PLAYER_ENTERING_WORLD",
@@ -72,9 +68,9 @@ end
 
 function InteractionsManagerMixin:SavedVars_OnInitialized()
     if 1 == 1 then
-        return
+        --return
     end
-    SavedVars:ResetTable("interactions", {})
+    --SavedVars:ResetTable("interactions", {})
     self.interactions = SavedVars:GetTable("interactions")
     self:ModifyMenus();
 end
@@ -85,7 +81,7 @@ function InteractionsManagerMixin:ModifyMenus()
         "PLAYER",
         "FOCUS",
         "PARTY",
-        "RAID",
+        "RAID_PLAYER",
     }
 
     local function ModifyMenu_AddNewInteractionButton(owner, rootDescription, contextData)
@@ -98,6 +94,7 @@ function InteractionsManagerMixin:ModifyMenus()
         local inputbox = newInteractionButton:CreateTemplate("InputBoxInstructionsTemplate");
         inputbox:AddInitializer(function(frame)
             editbox = frame;
+            editbox:SetMaxLetters(150);
             editbox.Instructions:SetText(NOTE_COLON or "");
             editbox.Instructions:SetPoint("TOPLEFT", 6, 0);
             editbox:SetPoint("TOPLEFT", 8, 0);
@@ -118,47 +115,13 @@ function InteractionsManagerMixin:ModifyMenus()
                     standingID = relation.standingID,
                     timeStamp = time(),
                     note = editbox:GetText(),
-                    location = string.format("%s:%s:%s", zone, x, y),
+                    location = zone,
+                    x = x,
+                    y = y,
                 }
                 self:NewInteraction(playerName, interaction)
             end)
         end
-    end
-
-    local function ModifyMenu_AddEditInteractionButton(owner, rootDescription, contextData)
-        local playerName = FormatPlayerName(contextData.name, contextData.surname);
-        local interaction = self.interactions[playerName];
-        local standing = rootDescription:CreateTitle(StandingColours[interaction.standingID]:WrapTextInColorCode(addon.locales["interactionEnumRelationshipLevel_" .. interaction.standingID]));
-        standing:SetTooltip(function(tooltip)
-            GameTooltip_SetTitle(tooltip, playerName);
-            GameTooltip_AddNormalLine(tooltip, " ");
-            GameTooltip_AddNormalLine(tooltip, interaction.note);
-        end)
-        local editInteractionButton = rootDescription:CreateButton("Edit", function() end);
-        editInteractionButton:CreateTitle("Interaction Options");
-        editInteractionButton:CreateTitle("|cffffffffUpdate note");
-
-        local editbox;
-        local inputbox = editInteractionButton:CreateTemplate("InputBoxInstructionsTemplate");
-        inputbox:AddInitializer(function(frame)
-            editbox = frame;
-            editbox.Instructions:SetText(NOTE_COLON or "");
-            editbox.Instructions:SetPoint("TOPLEFT", 6, 0);
-            editbox:SetPoint("TOPLEFT", 8, 0);
-            editbox:SetSize(120, 24);
-            editbox:SetAutoFocus(false);
-            editbox:HookScript("OnTextChanged", function(eb)
-                eb.Instructions:SetShown(eb:GetText() == "");
-            end)
-        end)
-
-        rootDescription:CreateButton("Share", function()
-            
-        end)
-
-        rootDescription:CreateButton("Delete", function()
-            self.interactions[playerName] = nil;
-        end)
     end
 
 
@@ -166,38 +129,93 @@ function InteractionsManagerMixin:ModifyMenus()
     local function AddMenuInteractionOptions(owner, rootDescription, contextData)
         local unit = contextData.unit;
         local playerName = FormatPlayerName(contextData.name, contextData.surname);
+        
         rootDescription:CreateDivider();
         rootDescription:CreateTitle(addonName .. " Interactions");
+        
         if self.interactions and self.interactions[playerName] then
-            ModifyMenu_AddEditInteractionButton(owner, rootDescription, contextData)
+            rootDescription:CreateTitle("|cffffffffRecent");
+            local interaction = C_EncodingUtil.DeserializeCBOR(self.interactions[playerName][1]); --grab the most recent interaction from the history
+            local standing = rootDescription:CreateTitle(GetRelationshipStandingText(interaction));
+            standing:SetTooltip(function(tooltip)
+                GameTooltip_SetTitle(tooltip, playerName);
+                GameTooltip_AddNormalLine(tooltip, " ");
+                GameTooltip_AddNormalLine(tooltip, interaction.note);
+            end)
+            ModifyMenu_AddNewInteractionButton(owner, rootDescription, contextData)
+            
+            rootDescription:CreateButton("Clear History", function()
+                self:DeletePlayerInteractions(playerName)
+            end)
+       
         else
             ModifyMenu_AddNewInteractionButton(owner, rootDescription, contextData)
         end
+
+        rootDescription:CreateButton("Open Interactions", function()
+            addon.Api.OpenTo(5)
+        end)
     end
 
     for _, unit in ipairs(unitsToModify) do
         Menu.ModifyMenu("MENU_UNIT_"..unit, AddMenuInteractionOptions)
     end
+
+    TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, function(tooltip)
+        if self.interactions then
+            --DevTools_Dump({ tooltip:GetUnit() })
+            local name, token, guid = tooltip:GetUnit();
+            --DevTools_Dump({GetPlayerInfoByGUID(guid)})
+            local playerName = select(6, GetPlayerInfoByGUID(guid));
+            if playerName and self.interactions[playerName] then
+                local interaction = C_EncodingUtil.DeserializeCBOR(self.interactions[playerName][1]);
+                local relationshipStanding = GetRelationshipStandingText(interaction);
+
+                tooltip:AddLine(" ");
+                tooltip:AddLine(addonName .. " Interactions");
+                tooltip:AddLine(relationshipStanding);
+                tooltip:AddLine(interaction.note, 1,1,1, true);
+            end
+        end
+    end)
 end
 
-function InteractionsManagerMixin:NewInteraction(playerName, interaction)
+function InteractionsManagerMixin:NewInteraction(playerName, interactionData)
 
-    if self.interactions then
-        self.interactions[playerName] = interaction;
+    if (self.interactions == nil) then
+        return;
+    end
+    if (self.interactions[playerName] == nil) then
+        self.interactions[playerName] = {};
     end
 
-    --update
+    --[[
+        lets create a history for these interactions
+    ]]
+    local interaction = C_EncodingUtil.SerializeCBOR(interactionData);
+    table.insert(self.interactions[playerName], 1, interaction);
+
+    --[[
+        do we make this just a single table and perform search/filtering?
+    ]]
+
 end
 
-function InteractionsManagerMixin:EditInteraction(playerName, interaction)
-    
+
+function InteractionsManagerMixin:DeletePlayerInteractions(playerName)
+    self.interactions[playerName] = nil;
 end
 
 
-
-
-
-
-
-
-addon.InteractionsManagerMixin = InteractionsManagerMixin;
+function InteractionsManagerMixin:GetInteractionsForPlayer(playerName)
+    local t = {};
+    for _, interaction in ipairs(self.interactions) do
+        if (interaction.playerName == playerName) then
+            table.insert(t, interaction);
+        end
+    end
+    table.sort(t, function(a, b)
+        return a.timeStamp > b.timeStamp;
+    end)
+    return t;
+end
