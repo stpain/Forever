@@ -85,13 +85,6 @@ function ForeverTBDJourneyEntryMixin:OnLeave()
 end
 
 function ForeverTBDJourneyEntryMixin:SetEntry(entry)
-    
-    -- local character, activity, meta = strsplit("|", entry);
-    -- local timeStamp, mapID, x, y = strsplit(":", meta);
-    -- timeStamp = tonumber(timeStamp);
-    -- mapID = tonumber(mapID);
-    -- x = tonumber(x);
-    -- y = tonumber(y);
 
     local journalEntry = C_EncodingUtil.DeserializeCBOR(entry)
 
@@ -164,14 +157,6 @@ function ForeverTBDJournalMixin:OnLoad()
     ScrollUtil.InitScrollBoxListWithScrollBar(self.ScrollBox, self.ScrollBar, journalList);
     
     self.filters = {}
-
-    -- local filter = function(entry)
-    --     if entry.character == ThisCharacter then
-    --         return true;
-    --     end
-    -- end
-
-    --SavedVars:GetAllCharacters("name");
 end
 
 function ForeverTBDJournalMixin:LoadJournal(filter)
@@ -218,6 +203,10 @@ function ForeverTBDJournalMixin:OnEvent(event, ...)
         self[event](self, ...);
         return;
     end
+    if (event == "PLAYER_CONTROL_GAINED") then
+        self:PLAYER_CONTROL_GAINED(...)
+        return;
+    end
     if (self.trackEvents == false) then
         --print("no tracking")
         return;
@@ -231,24 +220,7 @@ function ForeverTBDJournalMixin:SavedVars_OnInitialized()
     --SavedVars:ResetTable("journal", {});
     self.journal = SavedVars:GetTable("journal", true);
 
-    --print("Journal SV Loaded")
-
-    -- journal moved to a PerCharacter saved var file,
-    -- would be nice to have full journal filtering across
-    -- characters but the unique token limit needs to be respected
-
-    -- local f, s = UnitName("player");
-    -- local characterName = string.format("%s-%s", f, s)
-    -- local activeCharacter = SavedVars:FindCharacterByPredicate(function(character)
-    --     return character.name == characterName;
-    -- end)
-    -- if activeCharacter then
-    --     ThisCharacter = activeCharacter:GetName("colourized");
-    -- end
-
     self:LoadJournal();
-
-    --print("SavedVars_OnInitialized", time());
 
     local journalSize = #self.journal;
     if (journalSize >= JOURNAL_LIMIT) then
@@ -257,19 +229,19 @@ function ForeverTBDJournalMixin:SavedVars_OnInitialized()
 end
 
 --[[
-    During flights path journeys, you fly over zones
+    During flight path journeys, you fly over zones
     we don't want to capture those events.
 
     Disable event captures during flight path.
 ]]
 function ForeverTBDJournalMixin:PLAYER_CONTROL_LOST(...)
     self.trackEvents = false;
-    --print("settign tracking off");
+    print("settign tracking off");
 end
 
 function ForeverTBDJournalMixin:PLAYER_CONTROL_GAINED(...)
     self.trackEvents = true;
-    --print("settign tracking on");
+    print("settign tracking on");
 end
 
 function ForeverTBDJournalMixin:PLAYER_LEVEL_UP(...)
@@ -347,11 +319,16 @@ function ForeverTBDJournalMixin:ZONE_CHANGED_NEW_AREA()
 end
 
 function ForeverTBDJournalMixin:InsertEntry(activity, questID)
+    --print("insert Entry")
     if (self.journal) then
         local zone, x, y = addon.Api.GetLocation(true);
         if zone == nil then
-            return;
+            --print("no zone info, exit journal entry")
+            --return;
+            zone, x, y = "Unknown Zone", 0, 0;
         end
+
+        --DevTools_Dump({activity})
 
         local now;
         local shouldUseServerTimeForJournal = SavedVars:GetConfig("useServerTimeForJournal");
