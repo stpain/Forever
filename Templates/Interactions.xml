@@ -1,8 +1,161 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/AddOns/Blizzard_SharedXML/UI.xsd">
 
+    <Frame name="ForeverTBDInteractionsHistoryListTemplate" virtual="true">
+        <Size y="28"/>
+        <Layers>
+            <Layer level="OVERLAY">
+                <FontString parentKey="Standing" inherits="GameFontWhite" justifyH="LEFT">
+                    <Anchors>
+                        <Anchor point="LEFT"/>
+                    </Anchors>
+                    <Size x="100"/>
+                </FontString>
+                <FontString parentKey="Note" inherits="GameFontWhite" justifyH="LEFT">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Standing" relativePoint="RIGHT"/>
+                    </Anchors>
+                    <Size x="300"/>
+                </FontString>
+                <FontString parentKey="Time" inherits="GameFontWhite" justifyH="LEFT">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Note" relativePoint="RIGHT"/>
+                    </Anchors>
+                    <Size x="70"/>
+                </FontString>
+                <FontString parentKey="Location" inherits="GameFontWhite" justifyH="LEFT">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Time" relativePoint="RIGHT"/>
+                    </Anchors>
+                    <Size x="120"/>
+                </FontString>
+            </Layer>
+        </Layers>
+    </Frame>
+
+    <Button name="ForeverTBDInteractionsCharacterTemplate" mixin="ForeverTBDInteractionsCharacterMixin" registerForClicks="AnyDown" virtual="true">
+        <Layers>
+            <Layer level="OVERLAY" >
+                <FontString parentKey="Name" inherits="GameFontNormal">
+                    <Anchors>
+                        <Anchor point="LEFT" x="65"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+            <Layer level="ARTWORK">
+                <Texture parentKey="ClassIcon">
+                    <Size x="34" y="34"/>
+                    <Anchors>
+                        <Anchor point="LEFT" x="10" y="0"/>
+                    </Anchors>
+                </Texture>
+				<MaskTexture parentKey="IconMask" file="Interface\CharacterFrame\TempPortraitAlphaMask" hWrapMode="CLAMPTOBLACKADDITIVE" vWrapMode="CLAMPTOBLACKADDITIVE">
+					<Size x="56" y="56"/>
+                    <Anchors>
+						<Anchor point="CENTER" relativePoint="CENTER" relativeKey="$parent.ClassIcon"/>
+					</Anchors>
+					<MaskedTextures>
+						<MaskedTexture childKey="ClassIcon"/>
+					</MaskedTextures>
+				</MaskTexture>
+            </Layer>
+            <Layer level="ARTWORK" textureSubLevel="2">
+                <Texture atlas="Adventurers-Followers-Frame-Troops">
+                    <Size x="46" y="46"/>
+                    <Anchors>
+                        <Anchor point="CENTER" relativePoint="CENTER" relativeKey="$parent.ClassIcon"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+        </Layers>
+        <NormalTexture atlas="pvpqueue-button-casual-up"/>
+        <PushedTexture atlas="pvpqueue-button-casual-down"/>
+        <HighlightTexture atlas="pvpqueue-button-casual-selected" alphaMode="ADD"/>
+
+    </Button>
 
     <Frame name="ForeverTBDInteractions" mixin="InteractionsManagerMixin" virtual="true">
+
+        <Frames>
+
+            <Frame parentKey="CharacterScrollBox" inherits="WowScrollBoxList">
+                <Anchors>
+                    <Anchor point="TOPLEFT" x="5" y="-10"/>
+                    <Anchor point="BOTTOMLEFT" x="5" y="5"/>
+                </Anchors>
+                <Size x="265"/>
+            </Frame>
+
+            <EventFrame parentKey="CharacterScrollBar" inherits="MinimalScrollBar" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.CharacterScrollBox" relativePoint="TOPRIGHT" x="5" y="-5"/>
+                    <Anchor point="BOTTOMLEFT" relativeKey="$parent.CharacterScrollBox" relativePoint="BOTTOMRIGHT" x="5" y="5"/>
+                </Anchors>
+            </EventFrame>
+
+            <Frame parentKey="InteractionsScrollBox" inherits="WowScrollBoxList">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.CharacterScrollBox" relativePoint="TOPRIGHT" x="35" y="-40"/>
+                    <Anchor point="BOTTOMLEFT" relativeKey="$parent.CharacterScrollBox" relativePoint="BOTTOMRIGHT" x="35" y="0"/>
+                    <Anchor point="RIGHT" x="-25" y="0"/>
+                </Anchors>
+            </Frame>
+
+            <EventFrame parentKey="InteractionsScrollBar" inherits="MinimalScrollBar" frameStrata="HIGH">
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.InteractionsScrollBox" relativePoint="TOPRIGHT" x="5" y="-5"/>
+                    <Anchor point="BOTTOMLEFT" relativeKey="$parent.InteractionsScrollBox" relativePoint="BOTTOMRIGHT" x="5" y="5"/>
+                </Anchors>
+            </EventFrame>
+
+        </Frames>
+
+        <Layers>
+            <Layer level="ARTWORK">
+                <Texture atlas="Legacy-Tree-Frame-divider-Vertical">
+                    <Size x="12"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.CharacterScrollBar" relativePoint="TOPRIGHT" x="5" y="8"/>
+                        <Anchor point="BOTTOMLEFT" relativeKey="$parent.CharacterScrollBar" relativePoint="BOTTOMRIGHT" x="5" y="-8"/>
+                    </Anchors>
+                </Texture>
+                <Texture file="Interface/Buttons/WHITE8x8">
+                    <Color r="0.84765625" g="0.76171875" b="0.1796875" a="0.74"/>
+                    <Size y="2"/>
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="305" y="-40"/>
+                        <Anchor point="TOPRIGHT" x="-10" y="-40"/>
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="OVERLAY">
+                <FontString parentKey="Standing" inherits="GameFontWhite" justifyH="LEFT" text="Interaction">
+                    <Anchors>
+                        <Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" relativeKey="$parent.InteractionsScrollBox" x="0" y="20"/>
+                    </Anchors>
+                    <Size x="100" y="-20"/>
+                </FontString>
+                <FontString parentKey="Note" inherits="GameFontWhite" justifyH="LEFT" text="Note">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Standing" relativePoint="RIGHT"/>
+                    </Anchors>
+                    <Size x="300"/>
+                </FontString>
+                <FontString parentKey="Time" inherits="GameFontWhite" justifyH="LEFT" text="TIME">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Note" relativePoint="RIGHT"/>
+                    </Anchors>
+                    <Size x="70"/>
+                </FontString>
+                <FontString parentKey="Location" inherits="GameFontWhite" justifyH="LEFT" text="LOCATION">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeKey="$parent.Time" relativePoint="RIGHT"/>
+                    </Anchors>
+                    <Size x="120"/>
+                </FontString>
+            </Layer>
+        </Layers>
+
         <Scripts>
             <OnLoad method="OnLoad"/>
         </Scripts>

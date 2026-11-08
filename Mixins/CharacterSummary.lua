@@ -35,10 +35,10 @@ local function SetProfessionButton(button, data)
         SetProfessionTooltip(button, data[1], 1, data[4], data[3], data[3])
     end
 
-    button:SetScript("OnEnter", function()
-        button.updateTooltip();
+    --button:SetScript("OnEnter", function()
+        --button.updateTooltip();
         --DevTools_Dump(data)
-    end)
+    --end)
 
 end
 

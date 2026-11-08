@@ -186,7 +186,14 @@ ForeverTBDMixin = {};
 
 function ForeverTBDMixin:OnLoad()
     SLASH_FOREVER1 = "/ftbd";
-    SlashCmdList.FOREVER = function()
+    SlashCmdList.FOREVER = function(msg, editbox)
+        if (msg == "initdevtools") then
+            if DevTool and DevTool.AddData then
+                DevTool:AddData(ForeverTBDAccount, addonName.."Account")
+                DevTool:AddData(ForeverTBDCharacter, addonName.."Character")
+            end
+            return;
+        end
         self:Show();
     end
 
@@ -308,7 +315,7 @@ function ForeverTBDMixin:CreateOptions()
             GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
         end)
 
-        frame.NewFeature:Show();
+        frame.NewFeature:SetShown(currentConfig.isNew)
         
         if (frame.CheckBox) then
             frame.CheckBox:SetChecked(currentConfig.value);
@@ -613,11 +620,6 @@ function ForeverTBDMixin:OnHide()
 end
 
 function ForeverTBDMixin:SavedVars_OnInitialized()
-
-    if DevTool.AddData then
-        DevTool:AddData(ForeverTBDAccount, addonName)
-        DevTool:AddData(ForeverTBDCharacter, addonName.."Character")
-    end
 
     self:CreateMinimapButton();
     self:CreateOptions();

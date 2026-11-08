@@ -87,7 +87,7 @@ function SavedVars:Init(reset)
     local version = C_AddOns.GetAddOnMetadata(addonName, "Version");
     version = tonumber(version);
     if self.db.version < version then
-        --self:RunUpdate();
+        self:RunUpdate(version);
         self.db.version = version;
     end
 
@@ -96,13 +96,30 @@ function SavedVars:Init(reset)
     addon.CallbackRegistry:TriggerEvent(addon.Callbacks.SavedVars_OnInitialized);
 end
 
-function SavedVars:RunUpdate()
-
-    --[[
-        delaying the next update till beta ends as SV will be wiped anyways
-    ]]
+function SavedVars:RunUpdate(version)
 
     print(string.format("[%s] Running SavedVar Updates.", addonName));
+
+    if (version == 0.22) then
+        self:ResetTable("interactions");
+        print("Interaction data was reset due to data structure changes.")
+    end
+
+
+    print("Updating config");
+    local configsToUpdate = {
+        "autoVendorJunk",
+        "disableInboxGold",
+        "displayRestedFlipbook",
+        "useServerTimeForJournal",
+    };
+    for _, config in ipairs(configsToUpdate) do
+        self:SetConfigSeen(config);
+    end
+
+
+
+
     
     --anything that needs adjusting due to data changes
     --self.db is already set at this point
@@ -209,7 +226,7 @@ function SavedVars:SetConfig(key, value)
 end
 function SavedVars:SetConfigSeen(key)
     if self.db and self.db.config then
-        self.db.config[key].isNew = true;
+        self.db.config[key].isNew = false;
     end
 end
 

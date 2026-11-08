@@ -236,12 +236,12 @@ end
 ]]
 function ForeverTBDJournalMixin:PLAYER_CONTROL_LOST(...)
     self.trackEvents = false;
-    print("settign tracking off");
+    --print("settign tracking off");
 end
 
 function ForeverTBDJournalMixin:PLAYER_CONTROL_GAINED(...)
     self.trackEvents = true;
-    print("settign tracking on");
+    --print("settign tracking on");
 end
 
 function ForeverTBDJournalMixin:PLAYER_LEVEL_UP(...)

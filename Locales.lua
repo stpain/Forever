@@ -27,7 +27,7 @@ locales.enUS = {
     --journal activity entries, the event name is added as a suffix and used to create the display text
     journalActivity_TAXI_FLIGHT = "Took a taxi flight to: %s",
     journalActivity_QUEST_ACCEPTED = "Accepted quest: %s",
-    journalActivity_QUEST_TURNED_IN = "Turned in quest: %s\nReceived %d XP and %s gold.",
+    journalActivity_QUEST_TURNED_IN = "Turned in quest: %s\nReceived %d XP and %s.",
     journalActivity_ZONE_CHANGED_NEW_AREA = "Travelled to: %s",
     journalActivity_PLAYER_LEVEL_UP = "Reached level %s!", --technically a number value but its saved as part of a string and there is little gain in using tonumber when it'll work fine as a string value
 

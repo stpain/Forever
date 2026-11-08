@@ -110,7 +110,8 @@
         "GameTooltip_AddNormalLine",
         "MANA",
         "OPENING",
-        "TooltipDataProcessor"
+        "TooltipDataProcessor",
+        "IDLE_MESSAGE"
     ],
     "Lua.diagnostics.disable": [
         "assign-type-mismatch"
