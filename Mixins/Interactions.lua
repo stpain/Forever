@@ -257,20 +257,46 @@ function InteractionsManagerMixin:ModifyMenus()
     end
 
     TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, function(tooltip)
-        if self.interactions then
-            local name, token, guid = tooltip:GetUnit();
-            --DevTools_Dump({GetPlayerInfoByGUID(guid)})
-            local class = select(2, GetPlayerInfoByGUID(guid));
-            if (class == nil) then
-                return; --this should avoid tooltips for non players
-            end
-            if (string.sub(guid, 1, 6) ~= "Player") then --just to be sure
-                return;
-            end
-            local characterName = select(6, GetPlayerInfoByGUID(guid));
-            local first, surname = strsplit(" ", characterName)
-            local playerName = FormatPlayerName(first, surname, class)
 
+        -- local inInstance, instanceType = IsInInstance();
+        -- if (inInstance == true) and (instanceType ~= "none") then
+        --     return;
+        -- end
+
+        local isPlayer = UnitIsPlayer("mouseover");
+        if (isPlayer ~= true) then
+            --print("not player");
+            return;
+        end
+
+        local first, surname = UnitName("mouseover");
+        local _, class = UnitClass("mouseover");
+
+        local isSecret = issecretvalue(first);
+        if isSecret == true then
+            --print("is secret");
+            return;
+        end
+
+        if self.interactions then
+            --local name, token, guid = tooltip:GetUnit();
+
+            --print("mouseover", name2, name3, class2)
+
+            --isSecret = issecretvalue(value)
+
+            --DevTools_Dump({GetPlayerInfoByGUID(guid)})
+            -- local class = select(2, GetPlayerInfoByGUID(guid));
+            -- if (class == nil) then
+            --     return; --this should avoid tooltips for non players
+            -- end
+            -- if (string.sub(guid, 1, 6) ~= "Player") then
+            --     return;
+            -- end
+            -- local characterName = select(6, GetPlayerInfoByGUID(guid));
+            -- local first, surname = strsplit(" ", characterName)
+
+            local playerName = FormatPlayerName(first, surname, class)
             local interactions = self:GetInteractionsForPlayer(playerName);
 
             if interactions and interactions[1] then

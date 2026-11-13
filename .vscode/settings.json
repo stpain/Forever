@@ -111,7 +111,20 @@
         "MANA",
         "OPENING",
         "TooltipDataProcessor",
-        "IDLE_MESSAGE"
+        "IDLE_MESSAGE",
+        "nop",
+        "SendMailNameEditBox",
+        "DevTools_AddMessageHandler",
+        "ProfessionsRecipeListCategoryMixin",
+        "ProfessionsRecipeListRecipeMixin",
+        "SOUNDKIT",
+        "HandleModifiedItemClick",
+        "BATTLE_PET_UNFAVORITE",
+        "BATTLE_PET_FAVORITE",
+        "ROLL_DISENCHANT",
+        "CreateScrollBoxListGridView",
+        "GenerateClosure",
+        "CreateAnchor"
     ],
     "Lua.diagnostics.disable": [
         "assign-type-mismatch"

@@ -83,5 +83,17 @@ addon.helptipData = {
             buttonStyle = HelpTip.ButtonStyle.Okay,
             targetPoint = HelpTip.Point.RightEdgeCenter,
         }
+    },
+    
+    [4] = {
+
+    },
+
+    [5] = {
+        {
+            text = "You can record interactions with other players by right clicking their Unit Frame and selecting 'New Interaction'.\n\nYou can record mulitple interactions for characters and that history will show here.",
+            buttonStyle = HelpTip.ButtonStyle.Next,
+            targetPoint = HelpTip.Point.TopEdgeCenter,
+        },
     }
 }

@@ -18,7 +18,7 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
 
             <Frame parentKey="ReagentsContainer">
                 <Anchors>
-                    <Anchor point="TOP" relativeKey="$parent.OutputIcon" relativePoint="BOTTOM" x="75" y="-65"/>
+                    <Anchor point="TOP" relativeKey="$parent.OutputIcon" relativePoint="BOTTOM" x="75" y="-70"/>
                 </Anchors>
                 <Layers>
                     <Layer level="BACKGROUND">
@@ -34,7 +34,8 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
 
             <GameTooltip name="ForeverTBDRecipeTooltipEmbedded" parentKey="Tooltip" inherits="GameTooltipTemplate">
                 <Anchors>
-                    <Anchor point="TOPLEFT" relativeKey="$parent.OutputIcon" relativePoint="TOPRIGHT" x="280" y="0"/>
+                    <!-- <Anchor point="TOPLEFT" relativeKey="$parent.OutputIcon" relativePoint="TOPRIGHT" x="300" y="0"/> -->
+                    <Anchor point="TOPRIGHT" x="-20" y="-30"/>
                 </Anchors>
                 <KeyValues>
                     <KeyValue key="supportsDataRefresh" value="true" type="boolean"/>
@@ -44,6 +45,39 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
                     <OnUpdate function="GameTooltip_OnUpdate"/>
                 </Scripts>
             </GameTooltip>
+
+			<!-- Professions-QualityPane-bg-top -->
+
+			<Frame parentKey="AuctionatorPanel" hidden="true">
+				<Size x="263" y="220"/>
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT" x="-24" y="30"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture parentKey="BackgroundTop" atlas="Professions-QualityPane-bg-top" useAtlasSize="false">
+							<Size x="263" y="100"/>
+							<Anchors>
+								<Anchor point="TOP"/>
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BackgroundBottom" atlas="Professions-QualityPane-bg-bottom" useAtlasSize="false">
+							<Size x="263" y="100"/>
+							<Anchors>
+								<Anchor point="BOTTOM" x="0" y="-1"/>
+							</Anchors>
+						</Texture>
+						<Texture parentKey="BackgroundMiddle" atlas="Professions-QualityPane-bg-middle" useAtlasSize="false">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BackgroundTop" relativePoint="BOTTOMLEFT"/>
+								<Anchor point="TOPRIGHT" relativeKey="$parent.BackgroundTop" relativePoint="BOTTOMRIGHT"/>
+								<Anchor point="BOTTOMLEFT" relativeKey="$parent.BackgroundBottom" relativePoint="TOPLEFT"/>
+								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.BackgroundBottom" relativePoint="TOPRIGHT"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Frame>
 
         </Frames>
 
@@ -61,7 +95,7 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
 				<FontString parentKey="Description" inherits="GameFontHighlightSmall2" justifyV="TOP" justifyH="LEFT">
 					<Size x="460" y="0"/>
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeKey="$parent.OutputIcon" relativePoint="BOTTOMLEFT" y="-5"/>
+						<Anchor point="TOPLEFT" relativeKey="$parent.OutputIcon" relativePoint="BOTTOMLEFT" y="-11"/>
 					</Anchors>
 				</FontString>
 				<FontString parentKey="OutputText" inherits="GameFontHighlightMed2" justifyV="TOP" justifyH="LEFT">
@@ -95,6 +129,7 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
 
         <Scripts>
             <OnLoad method="OnLoad"/>
+			<OnShow method="OnShow"/>
         </Scripts>
 
     </Frame>
@@ -146,6 +181,9 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
 		</Layers>
 		<Scripts>
 			<OnLoad method="OnLoad"/>
+			<OnLeave>
+				GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+			</OnLeave>
 		</Scripts>
 	</ItemButton>
 

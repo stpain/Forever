@@ -57,4 +57,52 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
         </Scripts>
     </Frame>
 
+    <Slider name="ForeverTBDSlider" inherits="MinimalSliderTemplate" virtual="true">
+        <Layers>
+            <Layer level="OVERLAY">
+                <FontString parentKey="Label" inherits="GameFontNormalLarge">
+                    <Anchors>
+                        <Anchor point="LEFT" relativePoint="RIGHT" x="3" y="0"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+    </Slider>
+
+	<Button name="ForeverTBDProfessionsRecipeListRecipeTemplate" mixin="ForeverTBDProfessionsRecipeListRecipeMixin" registerForClicks="RightButtonUp, LeftButtonUp" virtual="true">
+		<!-- <KeyValues>
+			<KeyValue key="buttonContext" value="ButtonContext_ProfessionsRecipeButton" type="string"/>
+		</KeyValues> -->
+		<Size y="20"/>
+		<Layers>
+			<Layer level="OVERLAY" textureSubLevel="1">
+				<FontString parentKey="Label" inherits="GameFontHighlight_NoShadow" justifyH="LEFT">
+					<Size y="12"/>
+					<Anchors>
+						<Anchor point="LEFT" x="4"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+			<Layer level="OVERLAY" textureSubLevel="2">
+				<Texture parentKey="SelectedOverlay" atlas="Professions_Recipe_Active" useAtlasSize="true" hidden="true">
+					<Anchors>
+						<Anchor point="CENTER" x="0" y="-1"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="HIGHLIGHT">
+				<Texture parentKey="HighlightOverlay" atlas="Professions_Recipe_Hover" useAtlasSize="true" alpha="0.5">
+					<Anchors>
+						<Anchor point="CENTER" x="0" y="-1"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+		<!-- <Scripts>
+			<OnLoad method="OnLoad"/>
+			<OnEnter method="OnEnter"/>
+			<OnLeave method="OnLeave"/>
+		</Scripts> -->
+	</Button>
+
 </Ui>

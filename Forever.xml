@@ -25,7 +25,7 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                 <FontString parentKey="Text" inherits="GameFontNormal" justifyH="LEFT" wordwrap="false">
                     <Anchors>
                         <Anchor point="LEFT" x="37" y="0"/>
-                        <Anchor point="RIGHT" relativePoint="CENTER" x="-85" y="0"/>
+                        <Anchor point="RIGHT" relativePoint="CENTER" x="-55" y="0"/>
                     </Anchors>
                 </FontString>
             </Layer>
@@ -44,7 +44,7 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
         <Frames>
             <CheckButton parentKey="CheckBox" inherits="SettingsCheckboxTemplate">
                 <Anchors>
-                    <Anchor point="LEFT" relativePoint="CENTER" x="-30" y="0"/>
+                    <Anchor point="LEFT" relativePoint="CENTER" x="0" y="0"/>
                 </Anchors>
             </CheckButton>
         </Frames>
@@ -78,6 +78,7 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                     </Layer>
                 </Layers>
             </Button>
+
             <Button parentKey="Options">
                 <Anchors>
                     <Anchor point="TOPRIGHT" x="-8" y="-27"/>
@@ -102,6 +103,19 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                     </Layer>
                     </Layers>
             </Button>
+
+            <Button parentKey="WhatsNewButton" inherits="UIPanelButtonTemplate" text="SPLASH_NEW_HEADER">
+                <Anchors>
+                    <Anchor point="RIGHT" relativePoint="LEFT" relativeKey="$parent.Options" x="-5"/>
+                </Anchors>
+                <Size x="120" y="24"/>
+                <Scripts>
+                    <OnClick>
+                        self:GetParent().WhatsNew:Show()
+                    </OnClick>
+                </Scripts>
+            </Button>
+
 			<Frame parentKey="Tab1" inherits="ForeverTBDSideTabTemplate" parentArray="Tabs" id="1">
 				<KeyValues>
 					<KeyValue key="tooltipText" value="CHARACTER" type="global"/>
@@ -186,6 +200,24 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                 </Frames>
             </Frame>
 
+            <Frame name="ForeverTBDUIWhatsNewFrame" parentKey="WhatsNew" frameStrata="DIALOG" inherits="PortraitFrameTemplate" hidden="true">
+                <Anchors>
+                    <Anchor point="CENTER"/>
+                </Anchors>
+                <Size x="640" y="340"/>
+                <Frames>
+                    <Frame parentKey="Text" inherits="ScrollingFontTemplate">
+                        <Size x="560" y="240"/>
+                        <Anchors>
+                            <Anchor point="BOTTOM" x="0" y="20"/>
+                        </Anchors>
+                        <KeyValues>
+                            <KeyValue key="fontName" value="GameFontWhite"/>
+                        </KeyValues>
+                    </Frame>
+                </Frames>
+            </Frame>
+
             <Frame parentKey="CharacterSummary" inherits="ForeverTBDCharacterSummary" parentArray="Views" id="1">
                 <Anchors>
                     <Anchor point="TOPLEFT" x="5" y="-60"/>
@@ -193,67 +225,11 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                 </Anchors>
             </Frame>
 
-            <Frame parentKey="Professions" parentArray="Views" id="2" hidden="true">
+            <Frame parentKey="Professions" inherits="ForeverTBDTradeskills" parentArray="Views" id="2" hidden="true">
                 <Anchors>
-                    <Anchor point="TOPLEFT" x="5" y="-30"/>
+                    <Anchor point="TOPLEFT" x="5" y="-60"/>
                     <Anchor point="BOTTOMRIGHT" x="-7" y="5"/>
                 </Anchors>
-
-                <Frames>
-
-                    <Button parentKey="DropdownSelectProfession" inherits="ForeverTBDDropdownButtonTemplate">
-                        <KeyValues>
-                            <KeyValue key="defaultText" value="TRADESKILLS" type="global"/>
-                        </KeyValues>
-                        <Size x="130" y="28"/>
-                        <Anchors>
-                            <Anchor point="TOPLEFT" x="10" y="-36"/>
-                        </Anchors>
-                    </Button>
-
-                    <EditBox parentKey="RecipeSearchBox" inherits="InputBoxTemplate" autoFocus="false">
-                        <Anchors>
-                            <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.DropdownSelectProfession" x="10" y="0"/>
-                        </Anchors>
-                        <Size x="145" y="26"/>
-                        <Layers>
-                            <Layer level="OVERLAY">
-                                <FontString parentKey="Label" text="SEARCH" inherits="GameFontNormal">
-                                    <Color r="0.5" g="0.5" b="0.5" a="0.8"/>
-                                    <Anchors>
-                                        <Anchor point="LEFT" x="5"/>
-                                    </Anchors>
-                                </FontString>
-                            </Layer>
-                        </Layers>
-                    </EditBox>
-
-                    <!--Middle section character list-->
-					<Frame parentKey="CharacterTreeScrollBox" inherits="WowScrollBoxList">
-						<Anchors>
-							<Anchor point="TOPLEFT" x="0" y="-62"/>
-							<Anchor point="BOTTOMLEFT" x="0" y="5"/>
-						</Anchors>
-                        <Size x="285"/>
-					</Frame>
-
-					<EventFrame parentKey="CharacterTreeScrollBar" inherits="MinimalScrollBar" frameStrata="HIGH">
-						<Anchors>
-                            <Anchor point="TOPLEFT" relativeKey="$parent.CharacterTreeScrollBox" relativePoint="TOPRIGHT" x="5" y="-5"/>
-                            <Anchor point="BOTTOMLEFT" relativeKey="$parent.CharacterTreeScrollBox" relativePoint="BOTTOMRIGHT" x="5" y="5"/>
-						</Anchors>
-					</EventFrame>
-
-                    <!--Right side recipe schematic-->
-                    <Frame parentKey="SchematicForm" inherits="ForeverTBDRecipeSchematicTemplate">
-						<Anchors>
-                            <Anchor point="TOPLEFT" relativeKey="$parent.CharacterTreeScrollBox" relativePoint="TOPRIGHT" x="25" y="25"/>
-                            <Anchor point="BOTTOMLEFT" relativeKey="$parent.CharacterTreeScrollBox" relativePoint="BOTTOMRIGHT" x="25" y="-2"/>
-                            <Anchor point="RIGHT" x="-2"/>
-						</Anchors>
-                    </Frame>
-
-                </Frames>
             </Frame>
 
             <Frame parentKey="Whispers" inherits="ForeverTBDWhispers" parentArray="Views" id="3" hidden="true">

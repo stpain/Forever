@@ -170,11 +170,7 @@ local Events = {
     "ZONE_CHANGED",
     "ZONE_CHANGED_INDOORS",
     "ZONE_CHANGED_NEW_AREA",
-    --"PLAYER_LOGOUT",
-    --"TRADE_SKILL_LIST_UPDATE",
-    --"NEW_RECIPE_LEARNED",
     --"ADDON_LOADED",
-    --"TRADE_SKILL_DATA_SOURCE_CHANGED",
     "UNIT_AURA",
     "UI_INFO_MESSAGE",
     "PLAYER_INTERACTION_MANAGER_FRAME_SHOW",
@@ -184,13 +180,15 @@ local Events = {
 
 ForeverTBDMixin = {};
 
+--SendMailNameEditBox
+
 function ForeverTBDMixin:OnLoad()
     SLASH_FOREVER1 = "/ftbd";
     SlashCmdList.FOREVER = function(msg, editbox)
         if (msg == "initdevtools") then
             if DevTool and DevTool.AddData then
-                DevTool:AddData(ForeverTBDAccount, addonName.."Account")
-                DevTool:AddData(ForeverTBDCharacter, addonName.."Character")
+                DevTool:AddData(ForeverTBDAccount, addonName .. "Account")
+                DevTool:AddData(ForeverTBDCharacter, addonName .. "Character")
             end
             return;
         end
@@ -198,7 +196,14 @@ function ForeverTBDMixin:OnLoad()
     end
 
     self.HelpTipButton:SetFrameLevel(self.TitleContainer:GetFrameLevel() + 2);
-    _G[self:GetName().."Portrait"]:SetTexture([[Interface\Addons\Forever\Media\tbd-icon.png]])
+    _G[self:GetName() .. "Portrait"]:SetTexture([[Interface\Addons\Forever\Media\tbd-icon.png]]);
+    local newscasters = {
+        "raceicon128-goblin-female",
+        "raceicon128-mechagnome-female",
+    }
+    _G[self.WhatsNew:GetName() .. "Portrait"]:SetAtlas(newscasters[math.random(1, 2)]);
+    -- _G[self.WhatsNew:GetName().."Portrait"]:ClearAllPoints();
+    -- _G[self.WhatsNew:GetName().."Portrait"]:SetPoint("TOPLEFT", -10, 10)
 
     table.insert(UISpecialFrames, self:GetName());
 
@@ -221,11 +226,6 @@ function ForeverTBDMixin:OnLoad()
         self.OptionsPanel:Show();
     end)
 
-    --button = _G["MailItem"..i.."Button"];
-
-    --[[
-        hook InboxFrame:Update and loop buttons check for money and disable
-    ]]
 
     self.OptionsPanel.RESET_EVERYTHING:SetScript("OnClick", function()
         SavedVars:Init(true);
@@ -243,11 +243,28 @@ function ForeverTBDMixin:OnLoad()
     end
 
     self:InitHelpTips();
-    self:SetupProfessions();
     self:SetupHooks();
+
+    local whatsNewText = ""
+    for _, line in ipairs(addon.locales.whatsNew) do
+        whatsNewText = whatsNewText .. "|A:Professions-Icon-Quality-12-Tier2:18:18:0:4|a " .. line .. "\n";
+    end
+    self.WhatsNew.Text:SetText(whatsNewText);
 
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnDataChanged, self.SavedVars_OnDataChanged, self)
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnInitialized, self.SavedVars_OnInitialized, self)
+    addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnConfigChanged, self.SavedVars_OnConfigChanged, self)
+
+end
+
+function ForeverTBDMixin:SavedVars_OnConfigChanged(key, value)
+
+    if key == "enableDisenchantingRecipeButton" then
+        if self.professionInfo then
+            ProfessionsFrame.CraftingPage:Init(self.professionInfo)
+        end
+    end
+
 end
 
 function ForeverTBDMixin:CreateOptions()
@@ -286,6 +303,14 @@ function ForeverTBDMixin:CreateOptions()
                 configKey = "useServerTimeForJournal",
                 configTemplate = "ForeverTBDOptionsListCheckboxTemplate"
             },
+            {
+                configKey = "addSendMailCharacterListButton",
+                configTemplate = "ForeverTBDOptionsListCheckboxTemplate"
+            },
+            {
+                configKey = "enableDisenchantingRecipeButton",
+                configTemplate = "ForeverTBDOptionsListCheckboxTemplate"
+            },
         }
     }
 
@@ -304,9 +329,11 @@ function ForeverTBDMixin:CreateOptions()
         frame:SetScript("OnEnter", function()
             frame.HoverBackground:Show();
             if addon.locales[elementData.configKey.."_TT"] then
-                GameTooltip:SetOwner(frame, "ANCHOR_TOP", 90);
+                GameTooltip:SetOwner(frame, "ANCHOR_NONE");
                 GameTooltip:AddLine(displayText, 1,1,1);
                 GameTooltip:AddLine(addon.locales[elementData.configKey.."_TT"], nil, nil, nil, true)
+                GameTooltip:ClearAllPoints();
+                GameTooltip:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", 0, 0);
                 GameTooltip:Show();
             end
         end)
@@ -477,6 +504,14 @@ function ForeverTBDMixin:InitHelpTips()
             [2] = self.Whispers.MessagesScrollBox,
             [3] = self.Whispers.SendMessageButton,
         },
+
+        [4] = {
+
+        },
+
+        [5] = {
+            [1] = self.Interactions.InteractionsScrollBox,
+        },
     }
 
     self.helptipIndex = 0;
@@ -502,14 +537,209 @@ function ForeverTBDMixin:SetupHooks()
 
     ProfessionsFrame:HookScript("OnHide", function()
         self.lastProfessionID = nil;
+        self.professionInfo = nil;
     end)
 
+
     EventRegistry:RegisterCallback("Professions.ProfessionSelected", function(id, info)
+        self.professionInfo = info;
         professionSelected = info.professionID;
+        --print("Prof Selected", type(professionSelected))
+        ForeverTBDDisenchantingSchematic:Hide();
+        --DevTools_Dump({info})
         --print("selected prof id set")
     end)
+
+
+    --[[
+        in order to force a button into the recipe list I had to overwrite the view factory and extent functions
+        this is a direct copy/paste of the blizz code but with some added lines to manage the addon DE panel
+
+        I need to have a fallback element extent value which was added a basic final return value
+        I also had to add in a new Initializer for the custom button in the factory
+    ]]
+    local view = ProfessionsFrame.CraftingPage.RecipeList.ScrollBox:GetView();
+	view:SetElementExtentCalculator(function(dataIndex, node)
+		local elementData = node:GetData();
+		local baseElementHeight = 20;
+		local categoryPadding = 5;
+
+		if elementData.recipeInfo then
+			return baseElementHeight;
+		end
+
+		if elementData.categoryInfo then
+			return baseElementHeight + categoryPadding;
+		end
+
+		if elementData.dividerHeight then
+			return elementData.dividerHeight;
+		end
+
+		if elementData.topPadding then
+			return 1;
+		end
+
+        if elementData.bottomPadding then
+            return 10;
+        end
+        
+        return baseElementHeight; --added this default return
+	end);
+
+    local customDisenchantRecipeButton;
+	view:SetElementFactory(function(factory, node)
+		local elementData = node:GetData();
+		if elementData.categoryInfo then
+			local function Initializer(button, node)
+				button:Init(node);
+
+				button:SetScript("OnClick", function(button, buttonName)
+					ListHeaderMixin.OnClick(button, buttonName);
+
+					node:ToggleCollapsed();
+					button:UpdateCollapsedState(node:IsCollapsed());
+				end);
+
+				button:SetScript("OnEnter", function()
+					EventRegistry:TriggerEvent("ProfessionsDebug.CraftingRecipeListCategoryEntered", button, elementData.categoryInfo);
+					ProfessionsRecipeListCategoryMixin.OnEnter(button);
+				end);
+			end
+			factory("ProfessionsRecipeListCategoryTemplate", Initializer);
+		elseif elementData.recipeInfo then
+			local function Initializer(button, node)
+				button:Init(node, ProfessionsFrame.CraftingPage.RecipeList.hideCraftableCount);
+			
+				local selected = ProfessionsFrame.CraftingPage.RecipeList.selectionBehavior:IsElementDataSelected(node);
+				button:SetSelected(selected);
+
+				button:SetScript("OnClick", function(button, buttonName,  down)
+					EventRegistry:TriggerEvent("ProfessionsDebug.CraftingRecipeListRecipeClicked", button, buttonName, down, elementData.recipeInfo);
+					
+					if buttonName == "LeftButton" then
+						if IsModifiedClick() then
+							local link = C_TradeSkillUI.GetRecipeLink(elementData.recipeInfo.recipeID);
+							if not HandleModifiedItemClick(link) and IsModifiedClick("RECIPEWATCHTOGGLE") and Professions.CanTrackRecipe(elementData.recipeInfo) then
+								local recrafting = false;
+								local tracked = C_TradeSkillUI.IsRecipeTracked(elementData.recipeInfo.recipeID, recrafting);
+								C_TradeSkillUI.SetRecipeTracked(elementData.recipeInfo.recipeID, not tracked, recrafting);
+							end
+						else
+							ProfessionsFrame.CraftingPage.RecipeList.selectionBehavior:Select(button);
+
+                            --added to hide the DE panel whenever a normal recipe is selected
+                            if customDisenchantRecipeButton then
+                                customDisenchantRecipeButton:SetSelected(false)
+                            end
+                            ForeverTBDDisenchantingSchematic:Hide();
+						end
+					elseif buttonName == "RightButton" then
+						if elementData.recipeInfo.learned and Professions.InLocalCraftingMode() then
+							MenuUtil.CreateContextMenu(button, function(owner, rootDescription)
+								rootDescription:SetTag("MENU_PROFESSIONS_RECIPE_LIST_FAVORITE");
+
+								local recipeID = elementData.recipeInfo.recipeID;
+								local currentlyFavorite = C_TradeSkillUI.IsRecipeFavorite(recipeID);
+								if currentlyFavorite then
+									rootDescription:CreateButton(BATTLE_PET_UNFAVORITE, function()
+										C_TradeSkillUI.SetRecipeFavorite(recipeID, false);
+									end);
+								else
+									rootDescription:CreateButton(BATTLE_PET_FAVORITE, function()
+										C_TradeSkillUI.SetRecipeFavorite(recipeID, true);
+									end);
+								end
+							end);
+						end
+					end
+
+					PlaySound(SOUNDKIT.UI_90_BLACKSMITHING_TREEITEMCLICK);
+				end);
+
+				button:SetScript("OnEnter", function()
+					ProfessionsRecipeListRecipeMixin.OnEnter(button);
+					EventRegistry:TriggerEvent("ProfessionsDebug.CraftingRecipeListRecipeEntered", button, elementData.recipeInfo);
+				end);
+			end
+			factory("ProfessionsRecipeListRecipeTemplate", Initializer);
+		elseif elementData.isDivider then
+            factory("ProfessionsRecipeListDividerTemplate");
+            
+        --new init function for the custom button
+        elseif elementData.isDisenchantingButton then
+            local Initializer = function(button, node)
+                customDisenchantRecipeButton = button;
+                button.Label:SetText(ROLL_DISENCHANT)
+				button:SetSelected(ForeverTBDDisenchantingSchematic:IsShown());
+                button:SetScript("OnClick", function()
+
+                    ForeverTBDDisenchantingSchematic:SetParent(ProfessionsFrame.CraftingPage.SchematicForm);
+                    ForeverTBDDisenchantingSchematic:SetPoint("TOPLEFT");
+                    ForeverTBDDisenchantingSchematic:SetPoint("BOTTOMRIGHT");
+                    ForeverTBDDisenchantingSchematic:SetFrameLevel(ProfessionsFrame.CraftingPage.SchematicForm:GetFrameLevel() + 9);
+                    
+
+                    for k, frame in ProfessionsFrame.CraftingPage.RecipeList.ScrollBox:EnumerateFrames() do
+                        if frame.SetSelected then
+                            frame:SetSelected(false);
+                        end
+                    end
+
+                    button:SetSelected(true);
+
+                    ForeverTBDDisenchantingSchematic:Show();
+                    --print("Clicked")
+                end)
+            end
+            factory("ForeverTBDProfessionsRecipeListRecipeTemplate", Initializer)
+		else
+			factory("Frame");
+		end
+	end);
+
+    local function AddDisenchantingCategory()
+        local dp = ProfessionsFrame.CraftingPage.RecipeList.ScrollBox:GetDataProvider();
+
+        if dp:IsEmpty() then
+            return
+        end
+
+        local disenchantingCategory = dp:InsertAtIndex({
+            categoryInfo = {
+                name = "Disenchanting",
+                unlearned = false,
+                hasProgressBar = false,
+            },
+            group = -1,
+            topPadding = true,
+        }, 1)
+
+        disenchantingCategory:Insert({
+            topPadding = true,
+            order = -1,
+        })
+        disenchantingCategory:Insert({
+            order = 0,
+            isDisenchantingButton = true, --this key is used by the view to setup the button
+        })
+        disenchantingCategory:Insert({
+            bottomPadding = true,
+            order = 1,
+        })
+
+        if ForeverTBDDisenchantingSchematic:IsShown() then
+            for k, frame in ProfessionsFrame.CraftingPage.RecipeList.ScrollBox:EnumerateFrames() do
+                if frame.SetSelected then
+                    frame:SetSelected(false);
+                end
+            end
+        end
+    end
+
     hooksecurefunc(ProfessionsFrame.CraftingPage.RecipeList.ScrollBox, "SetDataProvider", function()
         --print("Prof data provider set > hook call")
+
         if (ActiveCharacter == nil) then
             return;
         end
@@ -519,10 +749,12 @@ function ForeverTBDMixin:SetupHooks()
             local linkType, payload, displayText = LinkUtil.ExtractLink(professionLink);
             local guid, _, profID = strsplit(":", payload);
             if tonumber(profID) then
-                professionID = profID;
+                --print("profID went to a number")
+                professionID = tonumber(profID);
                 --print(professionLink, profID)
             end
         end
+        --sometimes a prof doesn't activate a list (data provider creation)
         if (professionID == nil) then
             if (professionSelected) then
                 professionID = professionSelected;
@@ -531,7 +763,27 @@ function ForeverTBDMixin:SetupHooks()
         end
         self:ScanRecipes(professionID);
         professionSelected = nil;
+
+        --print(type(professionID))
+
+        if professionID ~= 333 then
+            --print("wrong prof ID")
+            return;
+        end
+
+        local enableDE = SavedVars:GetConfig("enableDisenchantingRecipeButton");
+        --DevTools_Dump({config = enableDE})
+        if enableDE.value ~= true then
+            return;
+        end
+
+        AddDisenchantingCategory();
+
     end)
+
+    -- hooksecurefunc(Professions, "GenerateCraftingDataProvider", function(profID)
+    
+    -- end)
 
     --when the player unlearns a profession we want to wipe the Character data for it and the recipes
     --this will create a nil for the character data slot which allows the UpdateProfessions function to
@@ -774,257 +1026,10 @@ function ForeverTBDMixin:UNIT_AURA(...)
     end
 end
 
-function ForeverTBDMixin:NEW_RECIPE_LEARNED(...)
-    local recipeID, recipeLevel = ...;
-    if recipeID then
-        local spell = Spell:CreateFromSpellID(recipeID);
-        spell:ContinueOnSpellLoad(function()
-            local name = spell:GetSpellName();
-            local icon = C_Spell.GetSpellTexture(recipeID);
-            local link = C_Spell.GetSpellLink(recipeID);
-        end)
-    end
-end
-
-function ForeverTBDMixin:TRADE_SKILL_DATA_SOURCE_CHANGED()
-    local professionLink = C_TradeSkillUI.GetTradeSkillListLink();
-    if (professionLink) then
-        local linkType, payload, displayText = LinkUtil.ExtractLink(professionLink);
-        local guid, _, profID = strsplit(":", payload);
-        if tonumber(profID) then
-            print(professionLink, profID)
-        end
-    end
-end
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---all this needs to move into a profession mixin and template structure
-
-function ForeverTBDMixin:SetupProfessions()
-
-    local function GetSortedKeys(t)
-        if (t == nil) then
-            return {}
-        end
-        local t1 = {};
-        for k, v in pairs(t) do
-            table.insert(t1, k);
-        end
-        table.sort(t1, function(a, b)
-            return a < b;
-        end)
-        return t1;
-    end
-
-    local function OnProfessionSearch(searchTerm)
-        self.Professions.SchematicForm.Background:SetAtlas("Professions-Recipe-Background")
-        local dataProvider = CreateTreeDataProvider();
-        local characterNodes = {};
-        local professionNodes = {};
-        local matchingRecipes = SavedVars:FindRecipeByName(searchTerm, true);
-        if #matchingRecipes > 0 then
-            for _, character in ipairs(addon.Characters) do
-                professionNodes = {};
-                for _, recipeID in ipairs(matchingRecipes) do
-                    if character:HasRecipe(recipeID) then
-                        if characterNodes[character:GetName()] == nil then
-                            local characterName = character:GetName("colourized");
-                            characterNodes[character:GetName()] = dataProvider:Insert({
-                                name = characterName,
-                                isHeader = true,
-                            })
-                        end
-                        --characterNode:Insert(recipeID);
-                        local recipeProfessionID = SavedVars:GetRecipeProfessionID(recipeID)
-                        local professionName = C_TradeSkillUI.GetTradeSkillDisplayName(recipeProfessionID);
-                        if professionNodes[professionName] == nil then
-                            professionNodes[professionName] = characterNodes[character:GetName()]:Insert({
-                                isHeader = true,
-                                name = professionName,
-                            })
-                        end
-                        professionNodes[professionName]:Insert(recipeID);
-                    end
-                end
-            end
-        end
-
-        self.Professions.CharacterTreeScrollBox:SetDataProvider(dataProvider)
-    end
-
-    self.Professions.RecipeSearchBox:SetScript("OnTextChanged", function(editBox)
-        local text = editBox:GetText();
-        if (text == "") then
-            editBox.Label:Show();
-        else
-            editBox.Label:Hide();
-            if #text > 2 then
-                OnProfessionSearch(text);
-            end
-        end
-    end)
-
-
-    local indent = 15;
-    local padding = 10;
-    local elementSpacing = 3;
-    local characterTree = CreateScrollBoxListTreeListView(indent, padding, padding, padding, padding, elementSpacing);
-
-    local function InitHeaderButton(button, elementData)
-        button.treeNode = elementData;
-        button.elementData = elementData:GetData();
-        button.Name:SetText(button.elementData.name)
-        button:RefreshStateIcon()
-    end
-
-    local function InitRecipeButton(button, elementData)
-        button.recipeID = elementData:GetData();
-        button.recipeData = SavedVars:FindRecipeByID(button.recipeID)
-
-        if button.recipeData == nil then
-            button.Content.Name:SetText("No data");
-            button:SetScript("OnClick", nil);
-            return;
-        end
-        button.Content.Name:SetText(button.recipeData.name)
-
-        --since this is borrowed from blizz i need to adjust the anchors
-        button.Content.Name:SetPoint("RIGHT", button.Content, "RIGHT", -4, 0)
-
-        button:SetScript("OnClick", function()
-            self.Professions.SchematicForm:LoadRecipe(button.recipeID, button.recipeData)
-        end)
-    end
-
-    characterTree:SetElementFactory(function(factory, treeNode)
-        local elementData = treeNode:GetData();
-
-        --this works for now but maybe could be neater
-        --the treeview dp is getting either a recipeID or a characterName
-        if (type(elementData) == "table") and elementData.isHeader then
-            factory("StatisticsHeaderTemplate", InitHeaderButton);
-        else
-            factory("StatisticsEntryTemplate", InitRecipeButton)
-        end
-    end)
-    ScrollUtil.InitScrollBoxListWithScrollBar(self.Professions.CharacterTreeScrollBox,
-        self.Professions.CharacterTreeScrollBar, characterTree);
-
-    local professionsBackgrounds = {
-        [171] = "Professions-Specializations-Background-Alchemy",
-        [164] = "Professions-Specializations-Background-Blacksmithing",
-        [333] = "Professions-Specializations-Background-Enchanting",
-        [202] = "Professions-Specializations-Background-Engineering",
-        [165] = "Professions-Specializations-Background-Leatherworking",
-        [197] = "Professions-Specializations-Background-Tailoring",
-        [185] = "Professions-Specializations-Background-Cooking",
-        [356] = "Professions-Specializations-Background-Fishing",
-        [129] = "Professions-Recipe-Background-FirstAid",
-        [182] = "Professions-Specializations-Background-Herbalism",
-        [186] = "Professions-Specializations-Background-Mining",
-        [393] = "Professions-Specializations-Background-Skinning",
-    }
-    local function OnProfessionSelected(profID)
-        self.Professions.SchematicForm.Background:SetAtlas(professionsBackgrounds[profID])
-        local dataProvider = CreateTreeDataProvider();
-
-
-        local characters = self:GetCharactersForProfession(profID)
-        if (#characters > 0) then
-            for _, character in ipairs(characters) do
-                local characterName = character:GetName("colourized");
-                local characterNode = dataProvider:Insert({
-                    name = characterName,
-                    isHeader = true,
-                });
-                -- local key = character:GetProfessionKey(profID)
-                -- if key then
-                --     local recipeIDs = character:GetProfessionRecipeIDs(key); --re work this to extract from SavedVars
-                --     if recipeIDs then
-                --         for _, recipeID in ipairs(recipeIDs) do
-                --             characterNode:Insert(recipeID);
-                --         end
-                --     end
-                -- end
-
-                local professionData = SavedVars:GetProfessionCategories(profID);
-                local profDataSorted = GetSortedKeys(professionData);
-                for _, categoryID in ipairs(profDataSorted) do
-                    local categoryNode = characterNode:Insert({
-                        name = professionData[categoryID].name,
-                        isHeader = true,
-                    })
-
-                    local recipesSorted = GetSortedKeys(professionData[categoryID].recipes);
-                    for _, recipeID in ipairs(recipesSorted) do
-                        categoryNode:Insert(recipeID);
-                    end
-                end
-            end
-        end
-
-        self.Professions.CharacterTreeScrollBox:SetDataProvider(dataProvider)
-    end
-
-    local professions = {
-        171,
-        164,
-        333,
-        202,
-        165,
-        197,
-        185,
-        356,
-        129,
-        182,
-        186,
-        393,
-    }
-    self.Professions.DropdownSelectProfession.OpenMenu:SetScript("OnClick", function()
-        local menu = MenuUtil.CreateContextMenu(self.Professions.DropdownSelectProfession,
-            function(owner, rootDescription)
-                for _, id in ipairs(professions) do
-                    local profName = C_TradeSkillUI.GetTradeSkillDisplayName(id)
-                    rootDescription:CreateButton(profName, function()
-                        self.Professions.DropdownSelectProfession.Text:SetText(profName);
-                        OnProfessionSelected(id);
-                        self.Professions.SchematicForm:ClearRecipe();
-                    end)
-                end
-            end)
-        menu:ClearAllPoints();
-        menu:SetPoint("TOPLEFT", self.Professions.DropdownSelectProfession, "BOTTOMLEFT", 3, 0);
-    end)
-end
 
 function ForeverTBDMixin:ScanRecipes(professionID)
 
@@ -1093,6 +1098,7 @@ function ForeverTBDMixin:ScanRecipes(professionID)
 
                 if element.data.categoryInfo.recipes then
                     for _, recipe in ipairs(element.data.categoryInfo.recipes) do
+                        --DevTools_Dump({recipe})
                         categories[element.data.categoryInfo.categoryID].recipes[recipe.recipeID] = {
                             icon = recipe.icon,
                             name = recipe.name,
@@ -1143,17 +1149,4 @@ function ForeverTBDMixin:ScanRecipes(professionID)
 
 end
 
-
-function ForeverTBDMixin:GetCharactersForProfession(professionID)
-    local t = {};
-    local professions = {"prof1", "prof2", "cooking", "fishing", "firstAid" };
-    for _, character in ipairs(addon.Characters) do
-        for _, profession in ipairs(professions) do
-            if (character:GetProfessionID(profession) == professionID) then
-                table.insert(t, character)
-            end
-        end
-    end
-    return t;
-end
 

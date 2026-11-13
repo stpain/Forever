@@ -105,7 +105,10 @@ function ForeverTBDJourneyEntryMixin:SetEntry(entry)
 
 end
 
+--need to remove a journal if the player remakes a same name character
+function ForeverTBDJourneyEntryMixin:Delete()
 
+end
 
 
 
@@ -280,10 +283,10 @@ function ForeverTBDJournalMixin:CHAT_MSG_LOOT(...)
 
     local msg, playerName = ...;
     local itemLink = msg:match("(|Hitem:.-|h.-|h)");
-    print(itemLink, playerName);
+    --print(itemLink, playerName);
     local f, l = UnitName("player");
     if string.format("%s %s", f, l) == playerName then
-        print("was me");
+        --print("was me");
         local item = Item:CreateFromItemLink(itemLink);
         item:ContinueOnItemLoad(function()
             if (item:GetItemQuality() > 3) then --grey/junk=0, white=1, green=2, blue=3, purples=4, legos=5

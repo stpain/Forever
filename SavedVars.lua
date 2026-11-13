@@ -38,6 +38,14 @@ local DefaultConfigOptions = {
         isNew = true,
         value = true,
     },
+    addSendMailCharacterListButton = {
+        isNew = true,
+        value = true,
+    },
+    enableDisenchantingRecipeButton = {
+        isNew = true,
+        value = true,
+    },
 }
 
 local CharacterDefaults = {
@@ -178,19 +186,11 @@ end
 function SavedVars:DeleteCharacter(characterName)
     local tempTable = {};
     if self.db.characters then
-        --local indexToDelete;
         for k, character in ipairs(self.db.characters) do
             if (character.name ~= characterName) then
                 table.insert(tempTable, character);
             end
-            -- if (character.name == characterName) then
-            --     indexToDelete = k;
-            -- end
         end
-        -- if (indexToDelete ~= nil) then
-        --     table.remove(self.db.characters, indexToDelete);
-        --     addon.CallbackRegistry:TriggerEvent(addon.Callbacks.SavedVars_OnDataChanged);
-        -- end
     end
     self.db.characters = {};
     for _, character in ipairs(tempTable) do
@@ -221,7 +221,7 @@ end
 function SavedVars:SetConfig(key, value)
     if self.db and self.db.config then
         self.db.config[key].value = value;
-        addon.CallbackRegistry:TriggerEvent(addon.Callbacks.SavedVars_OnConfigChanged);
+        addon.CallbackRegistry:TriggerEvent(addon.Callbacks.SavedVars_OnConfigChanged, key, value);
     end
 end
 function SavedVars:SetConfigSeen(key)

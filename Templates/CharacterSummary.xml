@@ -218,6 +218,24 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
                 </Anchors>
             </Button>
 
+            <!-- Map-Filter-Button -->
+
+            <Slider parentKey="LevelSlider" inherits="ForeverTBDSlider" minValue="1" maxValue="60" valueStep="1" defaultValue="1">
+                <Anchors>
+                    <Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.DropdownButtonProfession" x="60" y="0"/>
+                </Anchors>
+                <Size x="120" y="26"/>
+                <Layers>
+                    <Layer level="OVERLAY">
+                        <FontString parentKey="WidgetLabel" inherits="GameFontWhite" text="LEVEL">
+                            <Anchors>
+                                <Anchor point="RIGHT" relativePoint="LEFT" x="-3"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>
+            </Slider>
+
             <Frame parentKey="ScrollBox" inherits="WowScrollBoxList" frameStrata="HIGH">
                 <Anchors>
                     <Anchor point="TOPLEFT" x="5" y="-35"/>

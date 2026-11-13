@@ -424,7 +424,26 @@ function ForeverTBDCharacterSummaryMixin:SetupCharacterSummary()
         menu:SetPoint("TOPLEFT", self.DropdownButtonProfession, "BOTTOMLEFT", 3, 0);
     end)
 
+
+    self.LevelSlider:SetScript("OnMouseWheel", function(slider, delta)
+        local val = slider:GetValue();
+        slider:SetValue(val + delta);
+    end)
+    self.LevelSlider:SetScript("OnValueChanged", function(slider)
+        slider.Label:SetText(slider:GetValue())
+        self:LoadCharacterSummaryList();
+    end)
+
     self.filters = {};
+
+    --character level filtering is a little different
+    --it'll always have a value where other filters may have a "none" value (nil)
+    self.filters.level = function(character)
+        local val = self.LevelSlider:GetValue();
+        if (character.data.level >= val) then
+            return true
+        end
+    end
 end
 
 

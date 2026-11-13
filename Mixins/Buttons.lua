@@ -71,3 +71,21 @@ function ForeverTBDProfessionListButtonMixin:SetBackground()
         self.Background:SetAtlas("Profession-overview-Card")
     end
 end
+
+
+
+
+ForeverTBDProfessionsRecipeListRecipeMixin = {}
+
+function ForeverTBDProfessionsRecipeListRecipeMixin:OnEnter()
+    self.Label:SetVertexColor(HIGHLIGHT_FONT_COLOR:GetRGB());
+end
+
+function ForeverTBDProfessionsRecipeListRecipeMixin:OnLeave()
+    self.Label:SetVertexColor(PROFESSION_RECIPE_COLOR:GetRGB());
+end
+
+function ForeverTBDProfessionsRecipeListRecipeMixin:SetSelected(selected)
+	self.SelectedOverlay:SetShown(selected);
+	self.HighlightOverlay:SetShown(not selected);
+end

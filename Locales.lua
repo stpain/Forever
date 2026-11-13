@@ -7,6 +7,18 @@ local locales = {}
 
 locales.enUS = {
 
+    --whats new table list - the addon will format this as a list of lines
+    whatsNew = {
+        "Added tooltips to the profession reagents.",
+        "Profession crafted item tooltip now persists when closing.",
+        "Added a QoL Send Mail button, this will open a list of your characters names.",
+        "Fixed a bug with Enchanting recipes not loading.",
+        "Added a description for Enchanting recipes.",
+        "Added a disenchant interface to the enchanting profession recipe list.",
+        "Fixed a bug with interactions and secret values.",
+        "Added a min level filter to character summary (slider bar)."
+    },
+    
     --config display text and _TT (tooltip text)
     autoVendorJunk = "Auto vendor junk.",
     autoVendorJunk_TT = "Enabling this will skip the 'Sell Junk' button and dialog and immediately vendor your junk when you open the merchant window.",
@@ -19,6 +31,14 @@ locales.enUS = {
 
     useServerTimeForJournal = "Use server time for journal events.",
     useServerTimeForJournal_TT = "Setting this will cause the journal to use the game server time (as shown in the minimap clock) to track when events happen.",
+
+    addSendMailCharacterListButton = "Enable the send mail character list button.",
+    addSendMailCharacterListButton_TT = "This setting will add a button next to the Send Mail recipient edit box which will open a menu listing your characters names. Clicking a name will set it as the mail recipient.",
+
+    enableDisenchantingRecipeButton = "Enable the disenchanting interface.",
+    enableDisenchantingRecipeButton_TT = "This adds a Disenchanting category to your profession UI (if you have enchanting). Select the category recipe to see items which can be disenchanted.",
+
+
 
     --dialogs
     confirmTakeInboxGoldDialogText_S = "Are you sure you want to take this gold?\n\nDo you trust the sender: %s.",
