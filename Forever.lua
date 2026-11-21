@@ -67,6 +67,8 @@ end
 
 local function GuildIdentityFilter(self, event, msg, author, ...)
 
+    print(author)
+
     --this might be overkill to check for the value as we only add the filter if the config value isnt an empty string?
     local identity = SavedVars:GetConfig("guildChatMessageIdentityMessage");
     if identity.value and (identity.value ~= "") then
@@ -462,10 +464,10 @@ function ForeverTBDMixin:CreateOptions()
                 configKey = "enableDisenchantingRecipeButton",
                 configTemplate = "ForeverTBDOptionsListCheckboxTemplate"
             },
-            {
-                configKey = "guildChatMessageIdentityMessage",
-                configTemplate = "ForeverTBDOptionsListInputboxTemplate"
-            },
+            -- {
+            --     configKey = "guildChatMessageIdentityMessage",
+            --     configTemplate = "ForeverTBDOptionsListInputboxTemplate"
+            -- },
         }
     }
 

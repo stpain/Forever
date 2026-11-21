@@ -125,6 +125,10 @@ function SavedVars:RunUpdate(version)
         self:SetConfigSeen(config);
     end
 
+    if (version == 0.311) then
+        self:SetConfig("guildChatMessageIdentityMessage", "")
+    end
+
     
     --anything that needs adjusting due to data changes
     --self.db is already set at this point

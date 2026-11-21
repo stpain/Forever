@@ -19,11 +19,11 @@ locales.enUS = {
             "Fixed a bug with interactions and secret values.",
             "Added a min level filter to character summary (slider bar)."
         },
-        [0.31] = {
+        [0.311] = {
             "Added faction icons to chat character list.",
             "Send mail menu now only shows current faction alts.",
             "Fixed bug when deleting a chat history.",
-            "Added a guild nickname option for chat messages.",
+            --"Added a guild nickname option for chat messages.",
             "Added regaent counts to profession recipes.",
             "Fixed a bug in professions where all recipes were listed per character.",
         },
