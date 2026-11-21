@@ -124,7 +124,15 @@
         "ROLL_DISENCHANT",
         "CreateScrollBoxListGridView",
         "GenerateClosure",
-        "CreateAnchor"
+        "CreateAnchor",
+        "WHISPER",
+        "ALLIANCE_CHEER",
+        "FACTION_ALLIANCE",
+        "FACTION_HORDE",
+        "SendMailSubjectEditBox",
+        "HUD_EDIT_MODE_BAGS_LABEL",
+        "TOTAL",
+        "ChatFrameUtil"
     ],
     "Lua.diagnostics.disable": [
         "assign-type-mismatch"

@@ -46,7 +46,11 @@ function ForeverTBDProfessionsButtonMixin:SetSlotQuality(quality, name)
 	self.IconBorder:Show();
 end
 
+
 function ForeverTBDProfessionsButtonMixin:SetReagent(reagent, count)
+
+    count = count or 1;
+
 	local currencyID = reagent.currencyID;
 	if currencyID then
 		local currencyInfo = C_CurrencyInfo.GetCurrencyInfo(currencyID);
@@ -66,6 +70,28 @@ function ForeverTBDProfessionsButtonMixin:SetReagent(reagent, count)
                 self.Name:SetText(name)
                 self:SetSlotQuality(quality, name);
 
+                local includeUses, includeReagentBank, includeAccountBank = false, false, false;
+
+                local reagentInBags = C_Item.GetItemCount(itemID, false, includeUses, includeReagentBank, includeAccountBank);
+                local reagentTotal = C_Item.GetItemCount(itemID, true, includeUses, includeReagentBank, includeAccountBank);
+                
+                local bagString;
+                if (reagentInBags >= count) then
+                    bagString = GREEN_FONT_COLOR:WrapTextInColorCode(string.format("%d/%d", reagentInBags, count));
+                else
+                    bagString = RED_FONT_COLOR:WrapTextInColorCode(string.format("%d/%d", reagentInBags, count));
+                end
+                
+                local totalString;
+                if (reagentTotal >= count) then
+                    totalString = GREEN_FONT_COLOR:WrapTextInColorCode(string.format("%d/%d", reagentTotal, count));
+                else
+                    totalString = RED_FONT_COLOR:WrapTextInColorCode(string.format("%d/%d", reagentTotal, count));
+                end
+                
+                self.InventoryLocation:SetText(string.format("%s\n%s", HUD_EDIT_MODE_BAGS_LABEL, TOTAL))
+                self.InventoryCount:SetText(string.format("%s\n%s", bagString, totalString));
+
                 --i'm sure there is a proper tooltip for itembuttons
                 self:SetScript("OnEnter", function()
                     GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
@@ -78,7 +104,7 @@ function ForeverTBDProfessionsButtonMixin:SetReagent(reagent, count)
 		end
 	end
 
-	self:SetItemButtonCount(count or 0);
+	self:SetItemButtonCount(count);
 end
 
 
@@ -111,6 +137,8 @@ function ForeverTBDRecipeSchematicMixin:SetRecipe(recipeID, recipeData)
     self.recipeID = recipeID;
     self.recipeData = recipeData;
     self:LoadRecipe();
+
+    --C_TradeSkillUI.CraftRecipe(recipeID, count, craftingReagentTbl, recipeLevel, self.order.orderID, applyConcentration);
 end
 
 function ForeverTBDRecipeSchematicMixin:UpdateDescription()
@@ -222,7 +250,7 @@ function ForeverTBDRecipeSchematicMixin:LoadRecipe()
             button:Show();
         end
 
-        self.ReagentsContainer:SetSize(200, height)
+        self.ReagentsContainer:SetSize(320, height) --maybe make this wider
     end
 
 

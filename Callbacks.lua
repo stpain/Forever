@@ -70,3 +70,4 @@ function addon.Api.GetServerGameTime()
     now = time(nowTable);
     return now;
 end
+

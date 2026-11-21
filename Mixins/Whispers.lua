@@ -32,6 +32,12 @@ function ForeverTBDWhisperCharacterMixin:SetCharacter(character)
     if character.class then
         self.ClassIcon:SetAtlas(string.format("UI-HUD-UnitFrame-Player-Portrait-ClassIcon-%s", character.class));
     end
+    if character.faction then
+        self.Faction:SetAtlas(string.format("glues-characterSelect-icon-faction-%s-selected", character.faction));
+        self.Faction:Show();
+    else
+        self.Faction:Hide();
+    end
     self.onClick = character.onClick;
 end
 
@@ -42,7 +48,7 @@ function ForeverTBDWhisperCharacterMixin:OnClick(hwButton)
             rootDescription:CreateTitle(OPTIONS);
             rootDescription:CreateDivider();
             rootDescription:CreateButton(DELETE, function()
-               addon.CallbackRegistry:TriggerEvent(addon.Callbacks.Whisper_OnChatHistoryDeleted, self.character);
+               addon.CallbackRegistry:TriggerEvent(addon.Callbacks.Whisper_OnChatHistoryDeleted, self.character.name);
             end)
         end)
     else
@@ -92,7 +98,7 @@ function ForeverTBDWhisperMessageMixin:SetMessage(message)
             self.Bubble:ClearAllPoints();
             self.Bubble:SetPoint("TOPRIGHT", -5, -17);
             self.Bubble:SetPoint("BOTTOMRIGHT", -5, 5);
-            self.Bubble.AltName:SetText(MyCharacters[message.sender]);
+            self.Bubble.AltName:SetText(MyCharacters[message.sender].name);
             self.Bubble.AltName:Show();
         else
             self.Bubble:ClearAllPoints();
@@ -214,7 +220,7 @@ function ForeverTBDWhispersMixin:SavedVars_OnInitialized(...)
     for _, character in ipairs(addon.Characters) do
         local name = character:GetName("chat"); --"first last" (with a space not a hyphen)
         if (name ~= ThisCharacter) then
-            MyCharacters[name] = character:GetName("colourized");
+            MyCharacters[name] = { name = character:GetName("colourized"), faction = character:GetFaction() };
         end
     end
 
@@ -225,8 +231,18 @@ end
 function ForeverTBDWhispersMixin:Whisper_OnChatHistoryDeleted(character)
     if self.whispers then
         local newWhispers = {}
-        for _, whisper in ipairs(self.whispers) do
-            if (whisper.sender ~= character.name) then
+        for k, whisper in ipairs(self.whispers) do
+            -- if (whisper.sender ~= character.name) then
+            --     table.insert(newWhispers, whisper);
+            -- end
+            -- if k < 5 then
+            --     print(character, whisper.sender, whisper.recipient)
+            -- end
+
+            if (whisper.sender == character) or (whisper.recipient == character) then
+                --print("ignoring message");
+                --DevTools_Dump({whisper})
+            else
                 table.insert(newWhispers, whisper);
             end
         end
@@ -236,7 +252,7 @@ function ForeverTBDWhispersMixin:Whisper_OnChatHistoryDeleted(character)
         
         self:RefreshCharacterList();
 
-        if (self.currentChatHistoryRecipient == character.name) then
+        if (self.currentChatHistoryRecipient == character) then
             self:LoadChatHistory();
         end
     end
@@ -288,8 +304,18 @@ end
 
 
 function ForeverTBDWhispersMixin:LoadChatHistory(playerName)
+
+    --if its false it means we deleted a chat and that chat is the current active chat
+    --kill the comms and chat history
+    -- if (playerName == false) then
+    --     self.currentChatHistoryRecipient = nil;
+    --     self.ChatHistoryRecipientName:SetText("");
+    --     self.MessagesScrollBox:SetDataProvider(CreateDataProvider());
+    --     return;
+    -- end
+
     self.currentChatHistoryRecipient = playerName;
-    self.ChatHistoryRecipientName:SetText(playerName or "");
+    self.ChatHistoryRecipientName:SetText(playerName);
     if self.whispers then
         local t = {};
         local dateTable;
@@ -334,20 +360,62 @@ function ForeverTBDWhispersMixin:LoadChatHistory(playerName)
     end
 end
 
+local function GetMyCharactersFaction(name)
+    for _, character in ipairs(addon.Characters) do
+        if (name == character:GetName("chat")) then
+            return character:GetFaction();
+        end
+    end
+end
 
 function ForeverTBDWhispersMixin:RefreshCharacterList()
     local DataProvider = CreateDataProvider();
     local playersSeen = {};
-    if self.whispers then
-        for _, whisper in ipairs(self.whispers) do
+
+    -- table.sort(self.whispers, function(a, b)
+    --     return a.timeStamp < b.timeStamp;
+    -- end)
+
+    --is this wise for a bigger chat data table?
+    local timeSortedCharacterList = {}
+    for _, whisper in ipairs(self.whispers) do
+        table.insert(timeSortedCharacterList, whisper)
+    end
+    table.sort(timeSortedCharacterList, function(a, b)
+        return a.timeStamp > b.timeStamp;
+    end)
+
+    local faction;
+
+    --if timeSortedCharacterList then
+    for _, whisper in ipairs(timeSortedCharacterList) do
+        
+        faction = nil;
+
+        if MyCharacters[whisper.sender] then
+            faction = MyCharacters[whisper.sender].faction;
+            --print("sender", whisper.messageText, faction);
+        elseif MyCharacters[whisper.recipient] then
+            faction = MyCharacters[whisper.recipient].faction;
+            --print("recipient", whisper.messageText, faction);
+        else
+            if (whisper.sender == ThisCharacter) or (whisper.recipient == ThisCharacter) then
+                faction = UnitFactionGroup("player");
+            end
+        end
 
             --print(whisper.sender, whisper.recipient)
+
+            --[[
+                Can I extract a faction for the other player based on my characters that /w them?
+            ]]
 
             --handle the inbound messages using the .sender field
             if (playersSeen[whisper.sender] == nil) and (whisper.sender ~= ThisCharacter) and (MyCharacters[whisper.sender] == nil) then
                 DataProvider:Insert({
                     name = whisper.sender,
                     class = whisper.playerClass,
+                    faction = faction,
                     onClick = function()
                         self:LoadChatHistory(whisper.sender);
                     end,
@@ -363,6 +431,7 @@ function ForeverTBDWhispersMixin:RefreshCharacterList()
                     DataProvider:Insert({
                         name = whisper.recipient,
                         class = whisper.playerClass,
+                        faction = faction,
                         onClick = function()
                             self:LoadChatHistory(whisper.recipient);
                         end,
@@ -370,11 +439,10 @@ function ForeverTBDWhispersMixin:RefreshCharacterList()
                     playersSeen[whisper.recipient] = true;
                 end
             end
-
-
         end
-    end
+    --end
 
+    timeSortedCharacterList= nil;
 
     self.CharacterScrollBox:SetDataProvider(DataProvider);
 end

@@ -26,6 +26,12 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
 						<MaskedTexture childKey="ClassIcon"/>
 					</MaskedTextures>
 				</MaskTexture>
+                <Texture parentKey="Faction" atlas="glues-characterSelect-icon-faction-horde-selected">
+                    <Size x="28" y="34"/>
+                    <Anchors>
+                        <Anchor point="RIGHT" x="-5" y="0"/>
+                    </Anchors>
+                </Texture>
             </Layer>
             <Layer level="ARTWORK" textureSubLevel="2">
                 <Texture atlas="Adventurers-Followers-Frame-Troops">

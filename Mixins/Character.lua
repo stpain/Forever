@@ -70,8 +70,13 @@ function Character:SetRaceID(raceID)
     end
 end
 
-function Character:GetFaction()
-    return self.data.faction;
+function Character:GetFaction(returnAtlas)
+    if (returnAtlas == true) then
+        --return (self.data.faction == 1) and "UI-HUD-UnitFrame-SmallCircle-Horde" or "UI-HUD-UnitFrame-SmallCircle-Alliance";
+        return (self.data.faction == "Horde") and "questlog-questtypeicon-horde" or "questlog-questtypeicon-alliance";
+    else
+        return self.data.faction;
+    end
 end
 
 function Character:SetFaction(faction)

@@ -2,6 +2,10 @@
 
 local addonName, addon = ...;
 
+local SavedVars = addon.SavedVars;
+
+local ActiveCharacter;
+
 
 --should move this later
 StaticPopupDialogs['ForeverConfirmTakeInboxGoldDialog'] = {
@@ -34,11 +38,44 @@ StaticPopupDialogs['ForeverConfirmTakeInboxGoldDialog'] = {
     hideOnEscape = false,
 }
 
+local function HandleMailGoldClicked(button)
+    local bodyText, stationeryID1, stationeryID2, isTakeable, isInvoice, isConsortium = GetInboxText(InboxFrame.openMailID);
+    if (isInvoice == true) then
+        --AH invoice should be legit gold
+        return;
+    end
+
+    local shouldDisableMailGold = SavedVars:GetConfig("disableInboxGold");
+    if (shouldDisableMailGold.value == true) then
+        --local packageIcon, stationeryIcon, sender, subject, money, CODAmount, daysLeft, itemCount, wasRead, wasReturned, textCreated, canReply = GetInboxHeaderInfo(InboxFrame.openMailID);
+        local sender = select(3, GetInboxHeaderInfo(InboxFrame.openMailID));
+        button:SetScript("OnClick", function()
+            StaticPopup_Show("ForeverConfirmTakeInboxGoldDialog", sender)
+        end)
+    else
+        button:SetScript("OnClick", function()
+            OpenMailFrame.updateButtonPositions = false;
+            TakeInboxMoney(InboxFrame.openMailID);
+        end)
+    end
+end
 
 
-local SavedVars = addon.SavedVars;
 
-local ActiveCharacter;
+--chat filter ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_CHANNEL", myChatFilter)
+--ChatFrameUtil.RemoveMessageEventFilter
+
+local function GuildIdentityFilter(self, event, msg, author, ...)
+
+    --this might be overkill to check for the value as we only add the filter if the config value isnt an empty string?
+    local identity = SavedVars:GetConfig("guildChatMessageIdentityMessage");
+    if identity.value and (identity.value ~= "") then
+        return false, string.format("[%s] %s", identity.value, msg), author, ...;
+    else
+        return false, msg, author, ...;
+    end
+end
+
 
 local function UpdateProfessions()
     --print("UpdateProfessions")
@@ -163,16 +200,16 @@ end
 local Events = {
     "PLAYER_ENTERING_WORLD",
     "CHAT_MSG_SKILL",
-    "CHAT_MSG_SYSTEM", --ERR_SPELL_UNLEARNED_S
+    --"CHAT_MSG_SYSTEM", --ERR_SPELL_UNLEARNED_S
     "PLAYER_XP_UPDATE",
     "PLAYER_LEVEL_UP",
     "PLAYER_MONEY",
     "ZONE_CHANGED",
     "ZONE_CHANGED_INDOORS",
     "ZONE_CHANGED_NEW_AREA",
-    --"ADDON_LOADED",
-    "UNIT_AURA",
-    "UI_INFO_MESSAGE",
+    "ADDON_LOADED",
+    --"UNIT_AURA",
+    --"UI_INFO_MESSAGE",
     "PLAYER_INTERACTION_MANAGER_FRAME_SHOW",
     "PLAYER_UPDATE_RESTING",
 }
@@ -200,6 +237,7 @@ function ForeverTBDMixin:OnLoad()
     local newscasters = {
         "raceicon128-goblin-female",
         "raceicon128-mechagnome-female",
+        "warfront_asset_horde_flight_master"
     }
     _G[self.WhatsNew:GetName() .. "Portrait"]:SetAtlas(newscasters[math.random(1, 2)]);
     -- _G[self.WhatsNew:GetName().."Portrait"]:ClearAllPoints();
@@ -243,29 +281,142 @@ function ForeverTBDMixin:OnLoad()
     end
 
     self:InitHelpTips();
-    self:SetupHooks();
+    --self:SetupProfessionHooks();
 
-    local whatsNewText = ""
-    for _, line in ipairs(addon.locales.whatsNew) do
-        whatsNewText = whatsNewText .. "|A:Professions-Icon-Quality-12-Tier2:18:18:0:4|a " .. line .. "\n";
+    local version = C_AddOns.GetAddOnMetadata(addonName, "Version");
+    version = tonumber(version);
+    if (addon.locales.whatsNew[version]) then
+        local whatsNewText = ""
+        for _, line in ipairs(addon.locales.whatsNew[version]) do
+            whatsNewText = whatsNewText .. "|A:Professions-Icon-Quality-12-Tier2:18:18:0:4|a " .. line .. "\n";
+        end
+        self.WhatsNew.Text:SetText(whatsNewText);
     end
-    self.WhatsNew.Text:SetText(whatsNewText);
 
-    addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnDataChanged, self.SavedVars_OnDataChanged, self)
+    OpenMailMoneyButton:HookScript("OnShow", HandleMailGoldClicked)
+
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnInitialized, self.SavedVars_OnInitialized, self)
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnConfigChanged, self.SavedVars_OnConfigChanged, self)
 
 end
 
+function ForeverTBDMixin:OnEvent(event, ...)
+    if self[event] then
+        self[event](self, ...);
+    end
+end
+
+function ForeverTBDMixin:OnTabSelected(tab)
+    HelpTip:HideAll(self)
+    self.helptipIndex = 0;
+    for _, tab in ipairs(self.Tabs) do
+        tab:SetChecked(false);
+    end
+    tab:SetChecked(true);
+    for _, frame in ipairs(self.Views) do
+        frame:Hide();
+        if (frame:GetID() == tab:GetID()) then
+            frame:Show();
+            self.selectedTabID = tab:GetID();
+        end
+    end
+end
+
+--[[
+    the config setup is only interested in setting up the frames and widgets
+    and assigning the set/get config calls
+
+    if a config value changes that we want to react to, it should be handle in here
+]]
 function ForeverTBDMixin:SavedVars_OnConfigChanged(key, value)
 
+    --the DE panel will load in when the profession DataProvider is set, here we ust need to
+    --add/remove when ther user changes options. It'll load in regardless of addon loading
     if key == "enableDisenchantingRecipeButton" then
         if self.professionInfo then
             ProfessionsFrame.CraftingPage:Init(self.professionInfo)
         end
+        return;
+    end
+
+    --add/remove the chat filter as per the user input value ("" for no prefix added)
+    if (key == "guildChatMessageIdentityMessage") then
+        if (value == "") then
+            ChatFrameUtil.RemoveMessageEventFilter("CHAT_MSG_GUILD", GuildIdentityFilter)
+        else
+            ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_GUILD", GuildIdentityFilter)
+        end
+        return
     end
 
 end
+
+function ForeverTBDMixin:SavedVars_OnInitialized()
+
+    self:CreateMinimapButton();
+    self:CreateOptions();
+
+    local identity = SavedVars:GetConfig("guildChatMessageIdentityMessage");
+    if identity.value and (identity.value ~= "") then
+        ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_GUILD", GuildIdentityFilter)
+    end
+
+    local unit = "player";
+
+    local firstName, surname = UnitName(unit);
+    local name = string.format("%s-%s", firstName, surname);
+
+    ActiveCharacter = SavedVars:FindCharacterByPredicate(function(character)
+        return character.name == name;
+    end)
+
+    local isNew = false;
+    if (ActiveCharacter == nil) then
+        ActiveCharacter = SavedVars:NewCharacter();
+        isNew = true;
+    end
+
+    ActiveCharacter:SetName(name);
+
+    --the player might have deleted the character and reused the name
+    --set the class and race IDs to be safe
+    local _, race, raceID = UnitRace(unit);
+    ActiveCharacter:SetRaceID(raceID);
+
+    local factionInfo = C_CreatureInfo.GetFactionInfo(raceID);
+    ActiveCharacter:SetFaction(factionInfo.groupTag);
+
+    local _, class, classID = UnitClass(unit);
+    ActiveCharacter:SetClassID(classID);
+
+    local sex = UnitSex(unit);
+    ActiveCharacter:SetSex(sex);
+
+    local home = GetBindLocation();
+    ActiveCharacter:SetHome(home);
+
+    local isResting = IsResting();
+    ActiveCharacter:SetResting(isResting);
+
+    UpdateLocation();
+    UpdateXP();
+    UpdateMoney();
+    UpdateLevel(UnitLevel("player"));
+    UpdateProfessions();
+
+    if (ActiveCharacter ~= nil) then
+        local loginTime = ActiveCharacter:GetLoginTime();
+        if (loginTime == nil) then
+            local loginTime = time();
+            ActiveCharacter:SetLoginTime(loginTime);
+        end
+    end
+
+    if isNew == true then
+        addon.CallbackRegistry:TriggerEvent(addon.Callbacks.SavedVars_OnDataChanged);
+    end
+end
+
 
 function ForeverTBDMixin:CreateOptions()
 
@@ -311,6 +462,10 @@ function ForeverTBDMixin:CreateOptions()
                 configKey = "enableDisenchantingRecipeButton",
                 configTemplate = "ForeverTBDOptionsListCheckboxTemplate"
             },
+            {
+                configKey = "guildChatMessageIdentityMessage",
+                configTemplate = "ForeverTBDOptionsListInputboxTemplate"
+            },
         }
     }
 
@@ -352,6 +507,15 @@ function ForeverTBDMixin:CreateOptions()
             end)
             return;
         end
+
+        if (frame.InputBox) then
+            frame.InputBox:SetText(currentConfig.value);
+
+            frame.InputBox:SetScript("OnTextChanged", function(inputBox)
+                SavedVars:SetConfig(elementData.configKey, inputBox:GetText());
+            end)
+        end
+
     end
 
     --doing this for future reference on order
@@ -532,7 +696,128 @@ function ForeverTBDMixin:InitHelpTips()
     end)
 end
 
-function ForeverTBDMixin:SetupHooks()
+
+
+
+
+
+--[[
+=========================================================
+ EVENTS
+=========================================================
+]]
+
+function ForeverTBDMixin:ADDON_LOADED(...)
+    local name = ...;
+    if (name == "Blizzard_Professions") then
+        self:SetupProfessionHooks();
+    end
+end
+
+function ForeverTBDMixin:PLAYER_ENTERING_WORLD(...)
+    local isInitial, isReload = ...;
+    
+    if (isInitial or isReload) then
+        SavedVars:Init(); --force reset for sv updates
+    end
+
+    if (isInitial == true) and (ActiveCharacter ~= nil) then
+        local loginTime = time();
+        ActiveCharacter:SetLoginTime(loginTime);
+    end
+end
+
+
+--Handle the auto junk vendoring
+function ForeverTBDMixin:PLAYER_INTERACTION_MANAGER_FRAME_SHOW(...)
+    local id = ...;
+    if (id == 5) and (MerchantSellAllJunkButton:IsVisible()) then
+        local shouldVendorJunk = SavedVars:GetConfig("autoVendorJunk");
+        if (shouldVendorJunk.value == true) then
+            C_MerchantFrame.SellAllJunkItems();
+        end
+    end
+end
+
+function ForeverTBDMixin:CHAT_MSG_SKILL(...)
+    UpdateProfessions();
+end
+
+function ForeverTBDMixin:PLAYER_XP_UPDATE()
+    UpdateXP();
+end
+
+function ForeverTBDMixin:PLAYER_LEVEL_UP(...)
+    local newLevel = ...;
+    UpdateLevel(newLevel);
+end
+
+function ForeverTBDMixin:PLAYER_MONEY()
+    UpdateMoney();
+end
+
+function ForeverTBDMixin:ZONE_CHANGED_INDOORS()
+    UpdateLocation();
+end
+
+function ForeverTBDMixin:ZONE_CHANGED_NEW_AREA()
+    UpdateLocation();
+end
+
+function ForeverTBDMixin:PLAYER_UPDATE_RESTING()
+    if ActiveCharacter then
+        local isResting = IsResting();
+        ActiveCharacter:SetResting(isResting);
+    end
+end
+
+function ForeverTBDMixin:ZONE_CHANGED()
+    UpdateLocation();
+end
+
+--[[ end ]]
+
+
+
+
+
+
+--[[
+function ForeverTBDMixin:UNIT_AURA(...)
+    local unitTarget, updateInfo = ...;
+    if (unitTarget == "player") then
+        
+    end
+end
+
+function ForeverTBDMixin:CHAT_MSG_SYSTEM(...)
+    -- local msg = ...;
+    -- local pattern = ERR_SPELL_UNLEARNED_S:gsub("%%s", "(.+)");
+    -- local text = msg:match("^"..pattern.."$");
+    -- if text then
+    --     print(text)
+    --     DevTools_Dump(LinkUtil.SplitLink(text))
+    -- end
+end
+
+local zoneXpPatternMatch = ("^"..ERR_ZONE_EXPLORED_XP:gsub("%%s", "(.+)")):gsub("%%d", "(%%d+)").."$";
+local zonePatternMatch = "^"..ERR_ZONE_EXPLORED:gsub("%%s", "(.+)").."$";
+function ForeverTBDMixin:UI_INFO_MESSAGE(...)
+    local id, msg = ...;
+    local area, xp;
+    area, xp = msg:match(zoneXpPatternMatch);
+    if (area == nil) then
+        area = msg:match(zonePatternMatch);
+    end
+end
+]]
+
+
+--[[
+    Setup the various hooks and overwrite the prof view.
+]]
+function ForeverTBDMixin:SetupProfessionHooks()
+
     local professionSelected;
 
     ProfessionsFrame:HookScript("OnHide", function()
@@ -805,230 +1090,7 @@ function ForeverTBDMixin:SetupHooks()
         end
     end)
 
-
-    --[[
-        With the RMT issues and Blizzard taking action
-        its possible to get sent gold from a bad actor
-
-        The aim here is to prevent the player from accidently
-        taking gold from their inbox.
-
-        Blizzard OpenMailmoneyButton script
-            OpenMailFrame.updateButtonPositions = false;
-            TakeInboxMoney(InboxFrame.openMailID);
-    ]]
-    OpenMailMoneyButton:HookScript("OnShow", function(button)
-        local bodyText, stationeryID1, stationeryID2, isTakeable, isInvoice, isConsortium = GetInboxText(InboxFrame.openMailID);
-        if (isInvoice == true) then
-            --AH invoice should be legit gold
-            return;
-        end
-
-        local shouldDisableMailGold = SavedVars:GetConfig("disableInboxGold");
-        if (shouldDisableMailGold.value == true) then
-            --local packageIcon, stationeryIcon, sender, subject, money, CODAmount, daysLeft, itemCount, wasRead, wasReturned, textCreated, canReply = GetInboxHeaderInfo(InboxFrame.openMailID);
-            local sender = select(3, GetInboxHeaderInfo(InboxFrame.openMailID));
-            button:SetScript("OnClick", function()
-                StaticPopup_Show("ForeverConfirmTakeInboxGoldDialog", sender)
-            end)
-        else
-            button:SetScript("OnClick", function()
-                OpenMailFrame.updateButtonPositions = false;
-                TakeInboxMoney(InboxFrame.openMailID);
-            end)
-        end
-    end)
-
 end
-
-function ForeverTBDMixin:OnTabSelected(tab)
-    HelpTip:HideAll(self)
-    self.helptipIndex = 0;
-    for _, tab in ipairs(self.Tabs) do
-        tab:SetChecked(false);
-    end
-    tab:SetChecked(true);
-    for _, frame in ipairs(self.Views) do
-        frame:Hide();
-        if (frame:GetID() == tab:GetID()) then
-            frame:Show();
-            self.selectedTabID = tab:GetID();
-        end
-    end
-end
-
-function ForeverTBDMixin:OnEvent(event, ...)
-    if self[event] then
-        self[event](self, ...);
-    end
-end
-
-function ForeverTBDMixin:OnShow()
-    
-end
-
-function ForeverTBDMixin:OnHide()
-    
-end
-
-function ForeverTBDMixin:SavedVars_OnInitialized()
-
-    self:CreateMinimapButton();
-    self:CreateOptions();
-
-    local unit = "player";
-
-    local firstName, surname = UnitName(unit);
-    local name = string.format("%s-%s", firstName, surname);
-
-    ActiveCharacter = SavedVars:FindCharacterByPredicate(function(character)
-        return character.name == name;
-    end)
-
-    local isNew = false;
-    if (ActiveCharacter == nil) then
-        ActiveCharacter = SavedVars:NewCharacter();
-        isNew = true;
-    end
-
-    ActiveCharacter:SetName(name);
-
-    --the player might have deleted the character and reused the name
-    --set the class and race IDs to be safe
-    local _, race, raceID = UnitRace(unit);
-    ActiveCharacter:SetRaceID(raceID);
-
-    local factionInfo = C_CreatureInfo.GetFactionInfo(raceID);
-    ActiveCharacter:SetFaction(factionInfo.groupTag);
-
-    local _, class, classID = UnitClass(unit);
-    ActiveCharacter:SetClassID(classID);
-
-    local sex = UnitSex(unit);
-    ActiveCharacter:SetSex(sex);
-
-    local home = GetBindLocation();
-    ActiveCharacter:SetHome(home);
-
-    local isResting = IsResting();
-    ActiveCharacter:SetResting(isResting);
-
-    UpdateLocation();
-    UpdateXP();
-    UpdateMoney();
-    UpdateLevel(UnitLevel("player"));
-    UpdateProfessions();
-
-    if (ActiveCharacter ~= nil) then
-        local loginTime = ActiveCharacter:GetLoginTime();
-        if (loginTime == nil) then
-            local loginTime = time();
-            ActiveCharacter:SetLoginTime(loginTime);
-        end
-    end
-
-    if isNew == true then
-        addon.CallbackRegistry:TriggerEvent(addon.Callbacks.SavedVars_OnDataChanged);
-    end
-end
-
-function ForeverTBDMixin:SavedVars_OnDataChanged()
-    
-end
-
-function ForeverTBDMixin:PLAYER_ENTERING_WORLD(...)
-    local isInitial, isReload = ...;
-    
-    if (isInitial or isReload) then
-        SavedVars:Init(); --force reset for sv updates
-    end
-
-    if (isInitial == true) and (ActiveCharacter ~= nil) then
-        local loginTime = time();
-        ActiveCharacter:SetLoginTime(loginTime);
-    end
-end
-
-
-function ForeverTBDMixin:PLAYER_INTERACTION_MANAGER_FRAME_SHOW(...)
-    local id = ...;
-    if (id == 5) and (MerchantSellAllJunkButton:IsVisible()) then
-        local shouldVendorJunk = SavedVars:GetConfig("autoVendorJunk");
-        if (shouldVendorJunk.value == true) then
-            C_MerchantFrame.SellAllJunkItems();
-        end
-    end
-end
-
-
-function ForeverTBDMixin:CHAT_MSG_SKILL(...)
-    UpdateProfessions();
-end
-
-function ForeverTBDMixin:CHAT_MSG_SYSTEM(...)
-    -- local msg = ...;
-    -- local pattern = ERR_SPELL_UNLEARNED_S:gsub("%%s", "(.+)");
-    -- local text = msg:match("^"..pattern.."$");
-    -- if text then
-    --     print(text)
-    --     DevTools_Dump(LinkUtil.SplitLink(text))
-    -- end
-end
-
-function ForeverTBDMixin:PLAYER_XP_UPDATE()
-    UpdateXP();
-end
-
-function ForeverTBDMixin:PLAYER_LEVEL_UP(...)
-    local newLevel = ...;
-    UpdateLevel(newLevel);
-end
-
-function ForeverTBDMixin:PLAYER_MONEY()
-    UpdateMoney();
-end
-
-local zoneXpPatternMatch = ("^"..ERR_ZONE_EXPLORED_XP:gsub("%%s", "(.+)")):gsub("%%d", "(%%d+)").."$";
-local zonePatternMatch = "^"..ERR_ZONE_EXPLORED:gsub("%%s", "(.+)").."$";
-function ForeverTBDMixin:UI_INFO_MESSAGE(...)
-    local id, msg = ...;
-    local area, xp;
-    area, xp = msg:match(zoneXpPatternMatch);
-    if (area == nil) then
-        area = msg:match(zonePatternMatch);
-    end
-    --print("Area:", area, "XP:", xp);
-end
-
-function ForeverTBDMixin:ZONE_CHANGED_INDOORS()
-    UpdateLocation();
-end
-
-function ForeverTBDMixin:ZONE_CHANGED_NEW_AREA()
-    UpdateLocation();
-end
-
-function ForeverTBDMixin:PLAYER_UPDATE_RESTING()
-    if ActiveCharacter then
-        local isResting = IsResting();
-        ActiveCharacter:SetResting(isResting);
-    end
-end
-
-function ForeverTBDMixin:ZONE_CHANGED()
-    UpdateLocation();
-end
-
-function ForeverTBDMixin:UNIT_AURA(...)
-    local unitTarget, updateInfo = ...;
-    if (unitTarget == "player") then
-        
-    end
-end
-
-
-
-
 
 
 function ForeverTBDMixin:ScanRecipes(professionID)
@@ -1131,14 +1193,13 @@ function ForeverTBDMixin:ScanRecipes(professionID)
         SavedVars:UpdateProfessionRecipes(professionID, categories)
         ScanAndSetCharacterRecipes(recipeIDs);
 
+
+        --if the update failed we should check we have character prof data then try again
         if (hasUpdated == false) then
             UpdateProfessions();
             ScanAndSetCharacterRecipes(recipeIDs);
         end
 
-        --recipeIDs = nil;
-        --recipeData = nil;
-        --collectgarbage();
     end
 
     --[[
@@ -1148,5 +1209,3 @@ function ForeverTBDMixin:ScanRecipes(professionID)
     ]]
 
 end
-
-

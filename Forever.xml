@@ -50,6 +50,17 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
         </Frames>
     </Frame>
 
+    <Frame name="ForeverTBDOptionsListInputboxTemplate" inherits="ForeverTBDOptionsListTemplate" virtual="true">
+        <Frames>
+            <EditBox parentKey="InputBox" inherits="InputBoxTemplate" autoFocus="false">
+                <Anchors>
+                    <Anchor point="LEFT" relativePoint="CENTER" x="7" y="0"/>
+                </Anchors>
+                <Size x="175" y="26"/>
+            </EditBox>
+        </Frames>
+    </Frame>
+
 
     <Frame name="ForeverTBDUI" inherits="PortraitFrameTemplate" mixin="ForeverTBDMixin" parent="UIParent" movable="true">
 
@@ -259,8 +270,6 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
         <Scripts>
             <OnLoad method="OnLoad"/>
             <OnEvent method="OnEvent"/>
-            <OnShow method="OnShow"/>
-            <OnHide method="OnHide"/>
             <OnDragStart>
                 self:StartMoving()
             </OnDragStart>

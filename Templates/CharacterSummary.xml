@@ -252,6 +252,7 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
         </Frames>
         <Scripts>
             <OnLoad method="OnLoad"/>
+            <OnShow method="OnShow"/>
         </Scripts>
     </Frame>
 

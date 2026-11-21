@@ -17,11 +17,18 @@ SendMailCharacterListButton:SetScript("OnClick", function(self)
     local menu = MenuUtil.CreateContextMenu(self, function(owner, rootDescription)
         rootDescription:CreateTitle("Select Recipient");
         rootDescription:CreateDivider();
+
+        local faction = UnitFactionGroup("player");
+
         for _, character in ipairs(addon.Characters) do
-            rootDescription:CreateButton(character:GetName("colourized"), function()
-                SendMailNameEditBox:SetText(character:GetName("chat"))
-            end)
+            if (character:GetFaction() == faction) then
+                rootDescription:CreateButton(character:GetName("colourized"), function()
+                    SendMailNameEditBox:SetText(character:GetName("chat"))
+                    SendMailSubjectEditBox:SetText("Alt mail");
+                end)
+            end
         end
+
     end)
     menu:ClearAllPoints();
     menu:SetPoint("TOPLEFT", self, "BOTTOMLEFT", 3, 0);

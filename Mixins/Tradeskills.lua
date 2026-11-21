@@ -177,15 +177,31 @@ function ForeverTBDTradeskillsMixin:SetupProfessions()
 
                 local professionData = SavedVars:GetProfessionCategories(profID);
                 local profDataSorted = GetSortedKeys(professionData);
+
+                --:HasRecipe(recipeID)
+
                 for _, categoryID in ipairs(profDataSorted) do
-                    local categoryNode = characterNode:Insert({
-                        name = professionData[categoryID].name,
-                        isHeader = true,
-                    })
+                    local categoryNode;
+
+                    -- local categoryNode = characterNode:Insert({
+                    --     name = professionData[categoryID].name,
+                    --     isHeader = true,
+                    -- })
+
+                    
 
                     local recipesSorted = GetSortedKeys(professionData[categoryID].recipes);
                     for _, recipeID in ipairs(recipesSorted) do
-                        categoryNode:Insert(recipeID);
+
+                        if character:HasRecipe(recipeID) then
+                            if categoryNode == nil then
+                                categoryNode = characterNode:Insert({
+                                    name = professionData[categoryID].name,
+                                    isHeader = true,
+                                })
+                            end
+                            categoryNode:Insert(recipeID);
+                        end
                     end
                 end
             end

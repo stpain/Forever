@@ -30,8 +30,8 @@ local function FormatPlayerName(first, surname, class)
     return string.format("%s:%s:%s", first, surname, class);
 end
 
-local function DecodePlayerName(playerName)
-    local name, surname, class = strsplit(":", playerName);
+local function DecodePlayerName(playerInfo)
+    local name, surname, class = strsplit(":", playerInfo);
     return name, surname, class;
 end
 
@@ -73,8 +73,8 @@ function ForeverTBDInteractionsCharacterMixin:ClearCharacter()
     self.ClassIcon:SetTexture(nil);
 end
 
-function ForeverTBDInteractionsCharacterMixin:SetCharacter(playerName)
-    local name, surname, class = DecodePlayerName(playerName)
+function ForeverTBDInteractionsCharacterMixin:SetCharacter(playerInfo)
+    local name, surname, class = DecodePlayerName(playerInfo)
     self.Name:SetText(name.." "..surname)
     if class then
         self.ClassIcon:SetAtlas(string.format("UI-HUD-UnitFrame-Player-Portrait-ClassIcon-%s", class));
@@ -172,12 +172,10 @@ function InteractionsManagerMixin:ModifyMenus()
         "FOCUS",
         "PARTY",
         "RAID_PLAYER",
+        "FRIEND",
     }
 
-    local function ModifyMenu_AddNewInteractionButton(owner, rootDescription, contextData)
-        local unit = contextData.unit;
-        local _, class = UnitClass(unit);
-        local playerInfo = FormatPlayerName(contextData.name, contextData.surname, class);
+    local function ModifyMenu_AddNewInteractionButton(owner, rootDescription, playerInfo)
 
         local newInteractionButton = rootDescription:CreateButton("New interaction", function() end);
         newInteractionButton:CreateTitle("Interaction Options");
@@ -219,32 +217,51 @@ function InteractionsManagerMixin:ModifyMenus()
 
     --tailor the menu modification depending on the need
     local function AddMenuInteractionOptions(owner, rootDescription, contextData)
-        local unit = contextData.unit;
-        local _, class = UnitClass(unit);
-        local playerName = FormatPlayerName(contextData.name, contextData.surname, class);
+
+        local playerInfo;
+
+        if contextData.unit then
+            local unit = contextData.unit;
+            local _, class = UnitClass(unit);
+            playerInfo = FormatPlayerName(contextData.name, contextData.surname, class);
+
+        elseif contextData.playerLocation then
+            local name = C_PlayerInfo.GetName(contextData.playerLocation);
+            local _, class = C_PlayerInfo.GetClass(contextData.playerLocation);
+            if name and class then
+                local first, surname = strsplit(" ", name);
+                playerInfo = FormatPlayerName(name, surname, class);
+            end
+
+        end
+
+        if (playerInfo == nil) then
+            return
+        end
         
         rootDescription:CreateDivider();
         rootDescription:CreateTitle(addonName .. " Interactions");
 
-        local interactions = self:GetInteractionsForPlayer(playerName);
+        local interactions = self:GetInteractionsForPlayer(playerInfo);
         
         if interactions and interactions[1] then
             rootDescription:CreateTitle("|cffffffffRecent");
             local interaction = interactions[1]; --grab the most recent interaction from the history
             local standing = rootDescription:CreateTitle(GetRelationshipStandingText(interaction));
             standing:SetTooltip(function(tooltip)
-                GameTooltip_SetTitle(tooltip, playerName);
+                local first, surname, class = DecodePlayerName(playerInfo)
+                GameTooltip_SetTitle(tooltip, first.." "..surname);
                 GameTooltip_AddNormalLine(tooltip, " ");
                 GameTooltip_AddNormalLine(tooltip, interaction.note);
             end)
-            ModifyMenu_AddNewInteractionButton(owner, rootDescription, contextData)
+            ModifyMenu_AddNewInteractionButton(owner, rootDescription, playerInfo)
             
             rootDescription:CreateButton("Clear History", function()
-                self:DeletePlayerInteractions(playerName)
+                self:DeletePlayerInteractions(playerInfo)
             end)
        
         else
-            ModifyMenu_AddNewInteractionButton(owner, rootDescription, contextData)
+            ModifyMenu_AddNewInteractionButton(owner, rootDescription, playerInfo)
         end
 
         rootDescription:CreateButton("Open Interactions", function()
@@ -296,8 +313,8 @@ function InteractionsManagerMixin:ModifyMenus()
             -- local characterName = select(6, GetPlayerInfoByGUID(guid));
             -- local first, surname = strsplit(" ", characterName)
 
-            local playerName = FormatPlayerName(first, surname, class)
-            local interactions = self:GetInteractionsForPlayer(playerName);
+            local playerInfo = FormatPlayerName(first, surname, class)
+            local interactions = self:GetInteractionsForPlayer(playerInfo);
 
             if interactions and interactions[1] then
                 local interaction = interactions[1];
@@ -348,6 +365,9 @@ function InteractionsManagerMixin:LoadCharacters()
 end
 
 function InteractionsManagerMixin:GetInteractionsForPlayer(playerInfo)
+    if issecretvalue(playerInfo) then
+        return;
+    end
     local interactions = {};
     for _, interaction in ipairs(self.interactions) do
         if interaction.playerInfo == playerInfo then

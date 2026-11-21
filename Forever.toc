@@ -1,11 +1,11 @@
 ## Interface: 16001
 ## Author: TheBoringDad
-## Version: 0.3
+## Version: 0.31
 ## Title: Forever
 ## Notes: Forever, track your characters and more!
 ## SavedVariables: ForeverTBDAccount
 ## SavedVariablesPerCharacter: ForeverTBDCharacter
-## Dependencies: Blizzard_Professions
+# Dependencies: Blizzard_Professions
 
 ## IconAtlas: newplayerchat-chaticon-newcomer   
 

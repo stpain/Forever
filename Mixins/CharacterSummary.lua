@@ -123,7 +123,7 @@ function ForeverTBDCharacterSummaryCharacterMixin:UpdateCharacter()
 
     local classLocale, class = GetClassInfo(self.Character:GetClassID());
     local r, g, b = RAID_CLASS_COLORS[class]:GetRGB();
-    self.Background:SetColorTexture(r,g,b, 0.5)
+    self.Background:SetColorTexture(r,g,b, 0.7)
     self.Background:SetGradient("HORIZONTAL", CreateColor(r, g, b, 0.2), CreateColor(r, g, b, 0));
 
     --self.Name:SetText("|cffffffff"..self.Character.data.name);
@@ -138,10 +138,10 @@ function ForeverTBDCharacterSummaryCharacterMixin:UpdateCharacter()
     self.Login:SetText(CreateAtlasMarkup("housing-dashboard-timertag-clock-icon").." "..addon.SecondsFormatter:Format(time() - self.Character:GetLoginTime()))
     local first, second = UnitName("player");
     if (first.."-"..second) == self.Character:GetName() then
-        local x, gc = 0, 0;
+        local x = 0; --, gc = 0, 0;
         self:SetScript("OnUpdate", function(_, elapsed)
             x = (x + elapsed);
-            gc = (gc + elapsed);
+            --gc = (gc + elapsed);
             if (x < 1) then
                 return;
             end
@@ -149,12 +149,12 @@ function ForeverTBDCharacterSummaryCharacterMixin:UpdateCharacter()
             if self.Character then
                 self.Login:SetText(CreateAtlasMarkup("housing-dashboard-timertag-clock-icon").." "..DIM_GREEN_FONT_COLOR:WrapTextInColorCode(addon.SecondsFormatter:Format(time() - self.Character:GetLoginTime())))
             end
-            if (gc > 60) then
+            --if (gc > 60) then
                 --once a minute, monitor this value
-                collectgarbage();
+                --collectgarbage();
                 --print("gc")
-                gc = 0;
-            end
+                --gc = 0;
+            --end
         end)
     else
         self:SetScript("OnUpdate", nil)
@@ -254,7 +254,15 @@ function ForeverTBDCharacterSummaryMixin:OnLoad()
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnDataChanged, self.LoadCharacterSummaryList, self);
 end
 
-
+function ForeverTBDCharacterSummaryMixin:OnShow()
+    --default sorting for now
+    if addon.Characters and (#addon.Characters > 0) then
+        table.sort(addon.Characters, function(a, b)
+            return a.data.loginTime > b.data.loginTime;
+        end)
+        self:LoadCharacterSummaryList()
+    end
+end
 
 function ForeverTBDCharacterSummaryMixin:SetupCharacterSummary()
 
@@ -456,13 +464,6 @@ function ForeverTBDCharacterSummaryMixin:LoadCharacterSummaryList(filter)
     end
 
     local dataProvider = CreateDataProvider();
-
-
-    --default sorting for now
-    table.sort(addon.Characters, function(a, b)
-        return a.data.loginTime > b.data.loginTime;
-    end)
-
 
     if next(self.filters) ~= nil then
         for _, character in ipairs(addon.Characters) do

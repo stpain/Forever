@@ -9,14 +9,24 @@ locales.enUS = {
 
     --whats new table list - the addon will format this as a list of lines
     whatsNew = {
-        "Added tooltips to the profession reagents.",
-        "Profession crafted item tooltip now persists when closing.",
-        "Added a QoL Send Mail button, this will open a list of your characters names.",
-        "Fixed a bug with Enchanting recipes not loading.",
-        "Added a description for Enchanting recipes.",
-        "Added a disenchant interface to the enchanting profession recipe list.",
-        "Fixed a bug with interactions and secret values.",
-        "Added a min level filter to character summary (slider bar)."
+        [0.3] = {
+            "Added tooltips to the profession reagents.",
+            "Profession crafted item tooltip now persists when closing.",
+            "Added a QoL Send Mail button, this will open a list of your characters names.",
+            "Fixed a bug with Enchanting recipes not loading.",
+            "Added a description for Enchanting recipes.",
+            "Added a disenchant interface to the enchanting profession recipe list.",
+            "Fixed a bug with interactions and secret values.",
+            "Added a min level filter to character summary (slider bar)."
+        },
+        [0.31] = {
+            "Added faction icons to chat character list.",
+            "Send mail menu now only shows current faction alts.",
+            "Fixed bug when deleting a chat history.",
+            "Added a guild nickname option for chat messages.",
+            "Added regaent counts to profession recipes.",
+            "Fixed a bug in professions where all recipes were listed per character.",
+        },
     },
     
     --config display text and _TT (tooltip text)
@@ -38,6 +48,8 @@ locales.enUS = {
     enableDisenchantingRecipeButton = "Enable the disenchanting interface.",
     enableDisenchantingRecipeButton_TT = "This adds a Disenchanting category to your profession UI (if you have enchanting). Select the category recipe to see items which can be disenchanted.",
 
+    guildChatMessageIdentityMessage = "Set a nickname for guild chat.",
+    guildChatMessageIdentityMessage_TT = "You can set a nickname to apply as a prefix to your guild chat messages.\n\nLeave blank to remove.",
 
 
     --dialogs

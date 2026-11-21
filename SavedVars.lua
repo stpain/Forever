@@ -46,6 +46,10 @@ local DefaultConfigOptions = {
         isNew = true,
         value = true,
     },
+    guildChatMessageIdentityMessage = {
+        isNew = true,
+        value = "",
+    },
 }
 
 local CharacterDefaults = {
@@ -106,27 +110,20 @@ end
 
 function SavedVars:RunUpdate(version)
 
-    print(string.format("[%s] Running SavedVar Updates.", addonName));
+    print(string.format("[%s] Updating Saved Variables and Config.", addonName));
 
     if (version == 0.22) then
         self:ResetTable("interactions");
         print("Interaction data was reset due to data structure changes.")
     end
 
-
-    print("Updating config");
-    local configsToUpdate = {
-        "autoVendorJunk",
-        "disableInboxGold",
-        "displayRestedFlipbook",
-        "useServerTimeForJournal",
+    local configsSetAsSeen = {
+        "addSendMailCharacterListButton",
+        "enableDisenchantingRecipeButton",
     };
-    for _, config in ipairs(configsToUpdate) do
+    for _, config in ipairs(configsSetAsSeen) do
         self:SetConfigSeen(config);
     end
-
-
-
 
     
     --anything that needs adjusting due to data changes
@@ -205,16 +202,6 @@ function SavedVars:NewCharacter()
     local character = addon.Character:CreateFromData(self.db.characters[#self.db.characters]);
     table.insert(addon.Characters, character);
     return character;
-end
-
-function SavedVars:GetAllCharacters(dataKey)
-    if dataKey then
-        local t = {};
-        for _, character in ipairs(addon.Characters) do
-            table.insert(t, character.data[dataKey]);
-        end
-        return t;
-    end
 end
 
 

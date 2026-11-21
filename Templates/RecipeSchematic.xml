@@ -18,7 +18,7 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
 
             <Frame parentKey="ReagentsContainer">
                 <Anchors>
-                    <Anchor point="TOP" relativeKey="$parent.OutputIcon" relativePoint="BOTTOM" x="75" y="-70"/>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.OutputIcon" relativePoint="BOTTOMLEFT" x="0" y="-70"/>
                 </Anchors>
                 <Layers>
                     <Layer level="BACKGROUND">
@@ -173,9 +173,24 @@ https://raw.githubusercontent.com/Gethe/wow-ui-source/refs/heads/live/Interface/
 				</FontString>
 				<FontString parentKey="Name" inherits="GameFontHighlight_NoShadow" justifyH="LEFT">
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeKey="$parent.Icon" relativePoint="TOPRIGHT" x="5" y="0" />
+						<Anchor point="TOPLEFT" relativeKey="$parent.Icon" relativePoint="TOPRIGHT" x="5" y="-4" />
 						<Anchor point="BOTTOMLEFT" relativeKey="$parent.Icon" relativePoint="BOTTOMRIGHT" x="5" y="0" />
 					</Anchors>
+					<Size x="161"/>
+				</FontString>
+				<FontString parentKey="InventoryLocation" inherits="GameFontWhite" justifyH="RIGHT">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Name" relativePoint="TOPRIGHT" x="5" y="0" />
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent.Name" relativePoint="BOTTOMRIGHT" x="5" y="4" />
+					</Anchors>
+					<Size x="40"/>
+				</FontString>
+				<FontString parentKey="InventoryCount" inherits="GameFontWhite" justifyH="RIGHT">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.InventoryLocation" relativePoint="TOPRIGHT" x="5" y="0" />
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent.InventoryLocation" relativePoint="BOTTOMRIGHT" x="5" y="4" />
+					</Anchors>
+					<Size x="40"/>
 				</FontString>
 			</Layer>
 		</Layers>
