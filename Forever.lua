@@ -5,6 +5,7 @@ local addonName, addon = ...;
 local SavedVars = addon.SavedVars;
 
 local ActiveCharacter;
+local CharacterName;
 
 
 --should move this later
@@ -67,7 +68,10 @@ end
 
 local function GuildIdentityFilter(self, event, msg, author, ...)
 
-    print(author)
+    --if it isn't us, don't filter
+    if (author ~= CharacterName) then
+        return false, msg, author, ...;
+    end
 
     --this might be overkill to check for the value as we only add the filter if the config value isnt an empty string?
     local identity = SavedVars:GetConfig("guildChatMessageIdentityMessage");
@@ -344,9 +348,9 @@ function ForeverTBDMixin:SavedVars_OnConfigChanged(key, value)
     --add/remove the chat filter as per the user input value ("" for no prefix added)
     if (key == "guildChatMessageIdentityMessage") then
         if (value == "") then
-            ChatFrameUtil.RemoveMessageEventFilter("CHAT_MSG_GUILD", GuildIdentityFilter)
+            ChatFrameUtil.RemoveMessageEventFilter("CHAT_MSG_SAY", GuildIdentityFilter)
         else
-            ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_GUILD", GuildIdentityFilter)
+            ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_SAY", GuildIdentityFilter)
         end
         return
     end
@@ -360,7 +364,7 @@ function ForeverTBDMixin:SavedVars_OnInitialized()
 
     local identity = SavedVars:GetConfig("guildChatMessageIdentityMessage");
     if identity.value and (identity.value ~= "") then
-        ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_GUILD", GuildIdentityFilter)
+        ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_SAY", GuildIdentityFilter)
     end
 
     local unit = "player";
@@ -379,6 +383,7 @@ function ForeverTBDMixin:SavedVars_OnInitialized()
     end
 
     ActiveCharacter:SetName(name);
+    CharacterName = ActiveCharacter:GetName("chat");
 
     --the player might have deleted the character and reused the name
     --set the class and race IDs to be safe
@@ -464,10 +469,10 @@ function ForeverTBDMixin:CreateOptions()
                 configKey = "enableDisenchantingRecipeButton",
                 configTemplate = "ForeverTBDOptionsListCheckboxTemplate"
             },
-            -- {
-            --     configKey = "guildChatMessageIdentityMessage",
-            --     configTemplate = "ForeverTBDOptionsListInputboxTemplate"
-            -- },
+            {
+                configKey = "guildChatMessageIdentityMessage",
+                configTemplate = "ForeverTBDOptionsListInputboxTemplate"
+            },
         }
     }
 

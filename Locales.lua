@@ -27,6 +27,10 @@ locales.enUS = {
             "Added regaent counts to profession recipes.",
             "Fixed a bug in professions where all recipes were listed per character.",
         },
+        [0.312] = {
+            "Fixed minor bug with right clicking chat names to add interaction",
+            "Added faction icon to profession character headers",
+        }
     },
     
     --config display text and _TT (tooltip text)

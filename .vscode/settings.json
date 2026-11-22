@@ -132,7 +132,8 @@
         "SendMailSubjectEditBox",
         "HUD_EDIT_MODE_BAGS_LABEL",
         "TOTAL",
-        "ChatFrameUtil"
+        "ChatFrameUtil",
+        "FlagsUtil"
     ],
     "Lua.diagnostics.disable": [
         "assign-type-mismatch"

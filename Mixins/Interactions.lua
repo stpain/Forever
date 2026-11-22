@@ -230,7 +230,7 @@ function InteractionsManagerMixin:ModifyMenus()
             local _, class = C_PlayerInfo.GetClass(contextData.playerLocation);
             if name and class then
                 local first, surname = strsplit(" ", name);
-                playerInfo = FormatPlayerName(name, surname, class);
+                playerInfo = FormatPlayerName(first, surname, class);
             end
 
         end

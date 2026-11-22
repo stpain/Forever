@@ -161,8 +161,9 @@ function ForeverTBDTradeskillsMixin:SetupProfessions()
         if (#characters > 0) then
             for _, character in ipairs(characters) do
                 local characterName = character:GetName("colourized");
+                local characterFactionAtlas = character:GetFaction(true);
                 local characterNode = dataProvider:Insert({
-                    name = characterName,
+                    name = CreateAtlasMarkup(characterFactionAtlas, 14, 14, 0, 0).." "..characterName,
                     isHeader = true,
                 });
                 -- local key = character:GetProfessionKey(profID)
