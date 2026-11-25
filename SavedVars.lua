@@ -112,13 +112,12 @@ function SavedVars:RunUpdate(version)
 
     print(string.format("[%s] Updating Saved Variables and Config.", addonName));
 
-    if (version == 0.312) then
-        for _, interaction in ipairs(self.db.interactions) do
-            local firstName, surname, class = strsplit(":", interaction.playerInfo);
-            if string.find(firstName, " ", nil, true) then
-                local f, s = strsplit(" ", firstName);
-                interaction.playerInfo = string.format("%s:%s:%s", f, surname, class);
-            end
+    --this should be safe to leave in for a couple of version just to check in case anyone missed an update
+    for _, interaction in ipairs(self.db.interactions) do
+        local firstName, surname, class = strsplit(":", interaction.playerInfo);
+        if string.find(firstName, " ", nil, true) then
+            local f, s = strsplit(" ", firstName);
+            interaction.playerInfo = string.format("%s:%s:%s", f, surname, class);
         end
     end
 
@@ -130,9 +129,6 @@ function SavedVars:RunUpdate(version)
         self:SetConfigSeen(config);
     end
 
-    if (version == 0.311) then
-        self:SetConfig("guildChatMessageIdentityMessage", "")
-    end
 
     
     --anything that needs adjusting due to data changes

@@ -30,7 +30,10 @@ locales.enUS = {
         [0.312] = {
             "Fixed minor bug with right clicking chat names to add interaction",
             "Added faction icon to profession character headers",
-        }
+        },
+        [0.4] = {
+            "Added guild chat nickname setting."
+        },
     },
     
     --config display text and _TT (tooltip text)

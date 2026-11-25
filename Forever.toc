@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Author: TheBoringDad
-## Version: 0.312
+## Version: 0.4
 ## Title: Forever
 ## Notes: Forever, track your characters and more!
 ## SavedVariables: ForeverTBDAccount
@@ -31,6 +31,7 @@ Libs\ChatThrottleLib.lua
 Libs\LibDeflate\LibDeflate.lua
 Libs\AceComm-3.0\AceComm-3.0.xml
 Libs\LibSerialize\lib.xml
+Libs\LibChatFilter\lib.xml
 
 Locales.lua
 HelpTips.lua

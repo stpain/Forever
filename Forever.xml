@@ -7,6 +7,33 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
         </Scripts>
     </Frame>
 
+    <Frame name="SuggestedAddonRowTemplate" virtual="true">
+        <Size x="500" y="56"/>
+        <Layers>
+            <Layer level="OVERLAY">
+                <FontString parentKey="Name" inherits="GameFontNormalLarge">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="1" y="-1"/>
+                    </Anchors>
+                    <Color color="WHITE_FONT_COLOR"/>
+                </FontString>
+                <FontString parentKey="Description" inherits="GameFontNormal">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" relativeKey="$parent.Name" relativePoint="BOTTOMLEFT" x="0" y="-1"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Frames>
+            <EditBox parentKey="Url" inherits="InputBoxTemplate" autoFocus="false">
+                <Size x="460" y="22"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeKey="$parent.Description" relativePoint="BOTTOMLEFT" x="0" y="-1"/>
+                </Anchors>
+            </EditBox>
+        </Frames>
+    </Frame>
+
     <Frame name="ForeverTBDOptionsListTemplate" virtual="true">
         <Size x="280" y="26"/>
         <Layers>
@@ -127,6 +154,18 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                 </Scripts>
             </Button>
 
+            <Button parentKey="SuggestedAddonsButton" inherits="UIPanelButtonTemplate" text="ADDONS" hidden="true">
+                <Anchors>
+                    <Anchor point="RIGHT" relativePoint="LEFT" relativeKey="$parent.WhatsNewButton" x="-5"/>
+                </Anchors>
+                <Size x="120" y="24"/>
+                <Scripts>
+                    <OnClick>
+                        self:GetParent().SuggestedAddons:Show()
+                    </OnClick>
+                </Scripts>
+            </Button>
+
 			<Frame parentKey="Tab1" inherits="ForeverTBDSideTabTemplate" parentArray="Tabs" id="1">
 				<KeyValues>
 					<KeyValue key="tooltipText" value="CHARACTER" type="global"/>
@@ -211,7 +250,7 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                 </Frames>
             </Frame>
 
-            <Frame name="ForeverTBDUIWhatsNewFrame" parentKey="WhatsNew" frameStrata="DIALOG" inherits="PortraitFrameTemplate" hidden="true">
+            <Frame name="ForeverTBDUIWhatsNewFrame" parentKey="WhatsNew" frameLevel="4" frameStrata="DIALOG" inherits="PortraitFrameTemplate" hidden="true">
                 <Anchors>
                     <Anchor point="CENTER"/>
                 </Anchors>
@@ -227,6 +266,38 @@ https://raw.githubusercontent.com/Meorawr/wow-ui-schema/main/UI.xsd">
                         </KeyValues>
                     </Frame>
                 </Frames>
+            </Frame>
+
+            <Frame name="ForeverTBDUISuggestedAddonsFrame" parentKey="SuggestedAddons" frameLevel="3" frameStrata="DIALOG" inherits="PortraitFrameTemplate" hidden="true">
+                <Anchors>
+                    <Anchor point="CENTER"/>
+                </Anchors>
+                <Size x="640" y="540"/>
+                <Layers>
+                    <Layer level="OVERLAY">
+                        <FontString inherits="GameFontNormalLarge" text="Suggested Addons">
+                            <Anchors>
+                                <Anchor point="TOP" x="0" y="-30"/>
+                            </Anchors>
+                        </FontString>
+                        <!-- <FontString inherits="GameFontNormalLarge" text="Avoid AI slop!">
+                            <Anchors>
+                                <Anchor point="BOTTOM" x="0" y="10"/>
+                            </Anchors>
+                        </FontString> -->
+                    </Layer>
+                </Layers>
+                <!-- <Frames>
+                    <Frame parentKey="Text" inherits="ScrollingFontTemplate">
+                        <Size x="560" y="240"/>
+                        <Anchors>
+                            <Anchor point="BOTTOM" x="0" y="20"/>
+                        </Anchors>
+                        <KeyValues>
+                            <KeyValue key="fontName" value="GameFontWhite"/>
+                        </KeyValues>
+                    </Frame>
+                </Frames> -->
             </Frame>
 
             <Frame parentKey="CharacterSummary" inherits="ForeverTBDCharacterSummary" parentArray="Views" id="1">

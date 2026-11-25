@@ -63,24 +63,6 @@ end
 
 
 
---chat filter ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_CHANNEL", myChatFilter)
---ChatFrameUtil.RemoveMessageEventFilter
-
-local function GuildIdentityFilter(self, event, msg, author, ...)
-
-    --if it isn't us, don't filter
-    if (author ~= CharacterName) then
-        return false, msg, author, ...;
-    end
-
-    --this might be overkill to check for the value as we only add the filter if the config value isnt an empty string?
-    local identity = SavedVars:GetConfig("guildChatMessageIdentityMessage");
-    if identity.value and (identity.value ~= "") then
-        return false, string.format("[%s] %s", identity.value, msg), author, ...;
-    else
-        return false, msg, author, ...;
-    end
-end
 
 
 local function UpdateProfessions()
@@ -299,6 +281,48 @@ function ForeverTBDMixin:OnLoad()
         self.WhatsNew.Text:SetText(whatsNewText);
     end
 
+
+
+    --suggested addons
+    local addons = {
+        {
+            name = "Baganator",
+            description = "The ultimate bag addon",
+            url = "https://www.curseforge.com/wow/addons/baganator",
+        },
+        {
+            name = "Chattynator",
+            description = "Simple, account wide chat settings.",
+            url = "https://www.curseforge.com/wow/addons/chattynator",
+        },
+        {
+            name = "Angleur",
+            description = "The best and only fishing addon.",
+            url = "https://www.curseforge.com/wow/addons/angleur",
+        },
+    }
+
+    local function GetAddonRow(info)
+        local f = CreateFrame("Frame", nil, self.SuggestedAddons, "SuggestedAddonRowTemplate");
+        f.Name:SetText(info.name);
+        f.Description:SetText(info.description);
+        f.Url:SetText(info.url);
+        return f;
+    end
+
+    local lastRow;
+    for _, addon in ipairs(addons) do
+        local row = GetAddonRow(addon);
+        if (lastRow == nil) then
+            row:SetPoint("TOP", 0, -60);
+            lastRow = row;
+        else
+            row:SetPoint("TOP", lastRow, "BOTTOM", 0, -5);
+            lastRow = row;
+        end
+    end
+
+
     OpenMailMoneyButton:HookScript("OnShow", HandleMailGoldClicked)
 
     addon.CallbackRegistry:RegisterCallback(addon.Callbacks.SavedVars_OnInitialized, self.SavedVars_OnInitialized, self)
@@ -345,16 +369,6 @@ function ForeverTBDMixin:SavedVars_OnConfigChanged(key, value)
         return;
     end
 
-    --add/remove the chat filter as per the user input value ("" for no prefix added)
-    if (key == "guildChatMessageIdentityMessage") then
-        if (value == "") then
-            ChatFrameUtil.RemoveMessageEventFilter("CHAT_MSG_SAY", GuildIdentityFilter)
-        else
-            ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_SAY", GuildIdentityFilter)
-        end
-        return
-    end
-
 end
 
 function ForeverTBDMixin:SavedVars_OnInitialized()
@@ -362,10 +376,17 @@ function ForeverTBDMixin:SavedVars_OnInitialized()
     self:CreateMinimapButton();
     self:CreateOptions();
 
-    local identity = SavedVars:GetConfig("guildChatMessageIdentityMessage");
-    if identity.value and (identity.value ~= "") then
-        ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_SAY", GuildIdentityFilter)
+    local lcf = LibStub:GetLibrary("LibChatFilter");
+    local function PrependGuildNickname(text, context)
+        if (context.chatType ~= "GUILD") then
+            return;
+        end
+        local identity = SavedVars:GetConfig("guildChatMessageIdentityMessage");
+        if identity.value and (identity.value ~= "") then
+            return string.format("[%s] %s", identity.value, text);
+        end
     end
+    lcf.RegisterTransform(PrependGuildNickname)
 
     local unit = "player";
 
@@ -1207,7 +1228,11 @@ function ForeverTBDMixin:ScanRecipes(professionID)
             ScanAndSetCharacterRecipes(recipeIDs);
         end
 
+        recipeIDs = nil;
+        categories = nil;
+        
     end
+
 
     --[[
         omg how hard is it to keep track fo this stuff without mixing prof data
